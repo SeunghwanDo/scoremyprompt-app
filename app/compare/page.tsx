@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { Grade, AnalysisResult, DimensionScore, DimensionScores, DimensionMeta, JobRole } from '@/app/types';
+import Footer from '../components/Footer';
 
 type DimensionKey = keyof DimensionScores;
 
@@ -190,8 +191,8 @@ export default function ComparePage() {
             <a href="/" className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block">
               Home
             </a>
-            <a href="#" className="text-sm text-gray-400 hover:text-white transition-colors">
-              PromptTribe →
+            <a href="https://x.com/scoremyprompt" target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-white transition-colors">
+              Community →
             </a>
           </div>
         </div>
@@ -394,12 +395,7 @@ export default function ComparePage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-8 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400 text-sm">
-          <p>© 2025 ScoreMyPrompt. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }

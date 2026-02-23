@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../components/AuthProvider';
 import EmptyState from '../components/EmptyState';
 import type { Grade, DimensionMeta } from '@/app/types';
+import Footer from '../components/Footer';
 
 type DimensionKey = 'precision' | 'role' | 'outputFormat' | 'missionContext' | 'promptStructure' | 'tailoring';
 
@@ -394,12 +395,7 @@ export default function HistoryPage() {
         )}
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-8 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400 text-sm">
-          <p>&copy; 2025 ScoreMyPrompt. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }

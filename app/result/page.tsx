@@ -17,6 +17,7 @@ import {
 } from '../constants';
 import { GUIDES_CONTENT } from '../guides/content';
 import { trackResultViewed, trackShare, trackSignupInitiated } from '../lib/analytics';
+import Footer from '../components/Footer';
 
 // Map each dimension to the most relevant guide slug for improvement suggestions
 const DIMENSION_GUIDE_MAP: Record<string, string> = {
@@ -66,14 +67,16 @@ export default function ResultPage() {
   const isGuest = !user;
   const isPro = tier === 'pro';
 
-  type SharePlatform = 'twitter' | 'linkedin' | 'copy';
+  type SharePlatform = 'twitter' | 'linkedin' | 'bluesky' | 'copy';
 
   function getShareText(platform: SharePlatform, score: number, grade: string, gradeLabel: string, jobRole: string, percentile: number, url: string): string {
     switch (platform) {
       case 'twitter':
-        return `My AI prompt just scored ${score}/100 (${grade}-Tier) on ScoreMyPrompt! \u{1F3AF}\n\nTop ${100 - percentile}% among ${jobRole} professionals.\n\nWhat's your PROMPT Score? \u{1F447}\n${url}`;
+        return `My AI prompt just scored ${score}/100 (${grade}-Tier) on ScoreMyPrompt! \u{1F3AF}\n\nTop ${100 - percentile}% among ${jobRole} professionals.\n\n#PromptScoreChallenge #PromptEngineering\n\nWhat's your PROMPT Score? \u{1F447}\n${url}`;
       case 'linkedin':
-        return `I just discovered my AI prompting skill level.\n\nUsing ScoreMyPrompt's PROMPT Framework, my prompt scored ${score}/100 \u2014 ${gradeLabel}.\n\nAs a ${jobRole} professional, this puts me in the top ${100 - percentile}%.\n\nThe 6 dimensions measured: Precision, Role, Output Format, Mission Context, Prompt Structure, and Tailoring.\n\nCurious about your score? Try it free: ${url}`;
+        return `I just discovered my AI prompting skill level.\n\nUsing ScoreMyPrompt's PROMPT Framework, my prompt scored ${score}/100 \u2014 ${gradeLabel}.\n\nAs a ${jobRole} professional, this puts me in the top ${100 - percentile}%.\n\nThe 6 dimensions measured: Precision, Role, Output Format, Mission Context, Prompt Structure, and Tailoring.\n\nCurious about your score? Try it free: ${url}\n\n#PromptEngineering #AI #PromptScoreChallenge`;
+      case 'bluesky':
+        return `My AI prompt scored ${score}/100 (${grade}-Tier) on ScoreMyPrompt! \u{1F3AF}\n\nTop ${100 - percentile}% among ${jobRole} pros.\n\nWhat's your score?\n${url}`;
       case 'copy':
         return `I scored ${score}/100 (Grade ${grade}) on ScoreMyPrompt! Can you beat my score? ${url}`;
     }
@@ -115,6 +118,13 @@ export default function ResultPage() {
     trackShare({ method: 'linkedin', score: result.overallScore, grade: result.grade });
     const text = getShareText('linkedin', result.overallScore, result.grade, result.scoreLevel || '', result.jobRole || 'professionals', result.benchmarks?.percentile || 50, shareUrl);
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&summary=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleShareBluesky = () => {
+    if (!result) return;
+    trackShare({ method: 'bluesky', score: result.overallScore, grade: result.grade });
+    const text = getShareText('bluesky', result.overallScore, result.grade, result.scoreLevel || '', result.jobRole || 'professionals', result.benchmarks?.percentile || 50, shareUrl);
+    window.open(`https://bsky.app/intent/compose?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
   };
 
   const handleCopyLink = async () => {
@@ -519,6 +529,11 @@ export default function ResultPage() {
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
               LinkedIn
             </button>
+            {/* Bluesky */}
+            <button onClick={handleShareBluesky} className="btn-secondary flex items-center gap-2 text-sm" aria-label="Share on Bluesky">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 600 530"><path d="M135.72 44.03C202.216 93.951 273.74 195.86 300 249.834c26.262-53.974 97.782-155.883 164.28-205.804C520.074-1.248 630-46.996 630 105.28c0 30.394-17.396 255.372-27.6 291.96-35.466 127.196-165.416 159.608-282.348 139.952 204.396 34.764 256.272 149.876 144.012 265.2C345.766 924.724 300 844.5 300 844.5s-45.766 80.224-164.064-42.108C23.676 687.068 75.552 571.956 279.948 537.192 163.016 556.848 33.066 524.436-2.4 397.24-12.596 360.652-30 135.674-30 105.28-30-46.996 79.926-1.248 135.72 44.03z"/></svg>
+              Bluesky
+            </button>
             {/* Copy Link */}
             <button onClick={handleCopyLink} className="btn-secondary flex items-center gap-2 text-sm" aria-label="Copy share link">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
@@ -685,13 +700,13 @@ export default function ResultPage() {
         {/* Spacer for mobile sticky share bar */}
         <div className="sm:hidden h-20" />
 
-        {/* CTA to PromptTribe */}
+        {/* CTA to Community */}
         <div className="card bg-gradient-to-r from-accent/20 to-primary/20 border-accent/30 text-center py-8">
-          <h4 className="text-2xl font-bold text-white mb-3">Join PromptTribe</h4>
+          <h4 className="text-2xl font-bold text-white mb-3">Join the Community</h4>
           <p className="text-gray-400 mb-6 max-w-xl mx-auto text-sm">
             Connect with thousands of prompt engineers. Share templates, learn best practices, and stay updated.
           </p>
-          <a href="#" className="btn-primary inline-block">Join Our Community</a>
+          <a href="https://x.com/scoremyprompt" target="_blank" rel="noopener noreferrer" className="btn-primary inline-block">Follow @ScoreMyPrompt</a>
         </div>
 
         {/* Action Buttons */}
@@ -727,12 +742,7 @@ export default function ResultPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-8 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400 text-sm">
-          <p>&copy; 2025 ScoreMyPrompt. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }

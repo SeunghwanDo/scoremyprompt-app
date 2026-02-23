@@ -2,6 +2,7 @@ import { GUIDES_CONTENT } from '../content';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import { autoLinkGuides } from '@/app/lib/autoLinkGuides';
+import Footer from '@/app/components/Footer';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -322,12 +323,7 @@ export default async function GuideDetail({ params }: PageProps) {
         }}
       />
 
-      {/* Footer */}
-      <footer className="border-t border-border py-8 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400 text-sm">
-          <p>© 2025 ScoreMyPrompt. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }

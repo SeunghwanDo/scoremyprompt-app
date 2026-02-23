@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { TEMPLATES, ALL_ROLES } from './data';
+import Footer from '@/app/components/Footer';
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://scoremyprompt.com';
 
@@ -198,12 +199,7 @@ export default function TemplatesPage() {
         }}
       />
 
-      {/* Footer */}
-      <footer className="border-t border-border py-8 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400 text-sm">
-          <p>&copy; 2025 ScoreMyPrompt. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }

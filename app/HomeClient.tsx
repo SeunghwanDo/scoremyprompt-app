@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 import AdBanner from './components/AdBanner';
 import AnalysisLoading from './components/AnalysisLoading';
 import DemoMode from './components/DemoMode';
+import Footer from './components/Footer';
 import type { JobRole } from './types';
 import { TEMPLATES } from './templates/data';
 import { trackJobRoleSelected, trackPromptSubmitted, trackDemoClick, trackSignupInitiated } from './lib/analytics';
@@ -339,11 +340,7 @@ export default function HomeClient() {
       <Waitlist />
 
       {/* Footer */}
-      <footer className="border-t border-border py-8 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400 text-sm">
-          <p>© 2025 ScoreMyPrompt. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }

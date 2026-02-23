@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { GRADE_COLORS } from '@/app/constants';
 import type { Grade } from '@/app/types';
+import Footer from '../components/Footer';
 
 const GRADE_LABELS: Record<Grade, string> = {
   S: 'S-Tier',
@@ -121,12 +122,7 @@ function ChallengeContent(): React.JSX.Element {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-8 mt-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400 text-sm">
-          <p>&copy; 2025 ScoreMyPrompt. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }

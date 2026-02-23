@@ -28,7 +28,7 @@ function getAvatarColor(index: number) {
 
 const ViewRecipeTooltip = () => (
   <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-900 border border-gray-700 rounded text-xs text-gray-300 whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
-    Coming soon with PromptTribe
+    Coming soon
   </div>
 );
 
@@ -236,7 +236,7 @@ export default function Leaderboard() {
                       <button
                         disabled
                         className="btn-secondary w-full sm:w-auto opacity-50 cursor-not-allowed text-sm"
-                        title="Coming soon with PromptTribe"
+                        title="Coming soon"
                       >
                         View Recipe
                       </button>
