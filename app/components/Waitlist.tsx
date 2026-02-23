@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { trackWaitlistSignup } from '@/app/lib/analytics';
 
-export default function Waitlist() {
+export default function Waitlist({ source = 'homepage_newsletter' }: { source?: string }) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -30,21 +31,27 @@ export default function Waitlist() {
     setLoading(true);
 
     try {
-      // Mock API call - ready for real implementation
-      console.log('Subscribing email:', email);
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), source }),
+      });
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      const data = await response.json();
 
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to subscribe. Please try again.');
+      }
+
+      trackWaitlistSignup({ source });
       setSubmitted(true);
       setEmail('');
 
-      // Reset success state after 5 seconds
       setTimeout(() => {
         setSubmitted(false);
       }, 5000);
     } catch (err) {
-      setError('Something went wrong. Please try again.');
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
       console.error('Subscription error:', err);
     } finally {
       setLoading(false);

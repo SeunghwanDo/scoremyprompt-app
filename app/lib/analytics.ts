@@ -81,4 +81,55 @@ export function trackWaitlistSignup({ source }: { source: string }): void {
 export function trackDemoClick({ exampleId, difficulty }: { exampleId: string; difficulty: string }): void {
   if (typeof window === 'undefined') return;
   window.posthog?.capture('demo_example_clicked', { example_id: exampleId, difficulty });
+  if (!isProd) {
+    console.log('[Analytics] demo_example_clicked', { example_id: exampleId, difficulty });
+  }
+}
+
+export function trackJobRoleSelected({ jobRole }: { jobRole: string }): void {
+  if (typeof window === 'undefined') return;
+  window.posthog?.capture('job_role_selected', { job_role: jobRole });
+  if (!isProd) {
+    console.log('[Analytics] job_role_selected', { job_role: jobRole });
+  }
+}
+
+export function trackPromptSubmitted({ jobRole, promptLength }: { jobRole: string; promptLength: number }): void {
+  if (typeof window === 'undefined') return;
+  window.posthog?.capture('prompt_submitted', { job_role: jobRole, prompt_length: promptLength });
+  if (!isProd) {
+    console.log('[Analytics] prompt_submitted', { job_role: jobRole, prompt_length: promptLength });
+  }
+}
+
+export function trackResultViewed({ score, grade, jobRole }: { score: number; grade: string; jobRole: string }): void {
+  if (typeof window === 'undefined') return;
+  window.posthog?.capture('result_viewed', { score, grade, job_role: jobRole });
+  if (!isProd) {
+    console.log('[Analytics] result_viewed', { score, grade, job_role: jobRole });
+  }
+}
+
+export function trackSharePageVisited({ score, grade, jobRole }: { score: number; grade: string; jobRole: string }): void {
+  if (typeof window === 'undefined') return;
+  window.posthog?.capture('share_page_visited', { score, grade, job_role: jobRole });
+  if (!isProd) {
+    console.log('[Analytics] share_page_visited', { score, grade, job_role: jobRole });
+  }
+}
+
+export function trackSignupInitiated({ source }: { source: string }): void {
+  if (typeof window === 'undefined') return;
+  window.posthog?.capture('signup_initiated', { source });
+  if (!isProd) {
+    console.log('[Analytics] signup_initiated', { source });
+  }
+}
+
+export function trackSharePageCTA({ action }: { action: string }): void {
+  if (typeof window === 'undefined') return;
+  window.posthog?.capture('share_page_cta_clicked', { action });
+  if (!isProd) {
+    console.log('[Analytics] share_page_cta_clicked', { action });
+  }
 }

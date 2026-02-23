@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { GRADE_COLORS } from '@/app/constants';
 import type { Grade } from '@/app/types';
+import { trackDemoClick } from '@/app/lib/analytics';
 
 interface DemoDimensionScore {
   score: number;
@@ -149,7 +150,7 @@ export default function DemoMode() {
             {DEMO_EXAMPLES.map((ex) => (
               <button
                 key={ex.id}
-                onClick={() => setSelectedExample(ex.id)}
+                onClick={() => { setSelectedExample(ex.id); trackDemoClick({ exampleId: ex.id, difficulty: ex.difficulty }); }}
                 className={`w-full card text-left transition-all duration-200 ${
                   selectedExample === ex.id
                     ? 'border-primary bg-slate-800/50'

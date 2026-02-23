@@ -1,8 +1,10 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { GRADE_CONFIG, DIMENSION_META } from '@/app/constants';
 import type { Grade } from '@/app/types';
+import { trackSharePageVisited, trackSharePageCTA, trackWaitlistSignup } from '@/app/lib/analytics';
 
 interface ShareCardData {
   score: number;
@@ -20,8 +22,85 @@ interface ShareClientProps {
 
 const DIMENSION_KEYS = ['p', 'r', 'o', 'm', 's', 't'] as const;
 
+function ShareEmailCapture() {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || loading) return;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), source: 'share_page' }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Please try again.');
+      }
+
+      trackWaitlistSignup({ source: 'share_page' });
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (submitted) {
+    return (
+      <p className="text-center text-green-400 text-sm py-2">
+        You&apos;re in! Check your inbox.
+      </p>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-2">
+      <div className="flex flex-col sm:flex-row gap-2">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => { setEmail(e.target.value); setError(''); }}
+          placeholder="your@email.com"
+          className="input-field flex-1 text-sm"
+          disabled={loading}
+          autoComplete="email"
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-primary whitespace-nowrap text-sm disabled:opacity-50"
+        >
+          {loading ? 'Joining...' : 'Subscribe'}
+        </button>
+      </div>
+      {error && <p className="text-xs text-red-400">{error}</p>}
+    </form>
+  );
+}
+
 export default function ShareClient({ data }: ShareClientProps) {
   const gradeConfig = GRADE_CONFIG[data.grade];
+
+  useEffect(() => {
+    trackSharePageVisited({ score: data.score, grade: data.grade, jobRole: data.jobRole });
+  }, [data.score, data.grade, data.jobRole]);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-dark via-surface to-dark">
@@ -96,6 +175,7 @@ export default function ShareClient({ data }: ShareClientProps) {
           <Link
             href="/"
             className="btn-primary inline-flex items-center gap-2 text-lg px-8 py-4 rounded-xl"
+            onClick={() => trackSharePageCTA({ action: 'try_it_yourself' })}
           >
             Try It Yourself
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -103,6 +183,20 @@ export default function ShareClient({ data }: ShareClientProps) {
             </svg>
           </Link>
           <p className="text-xs text-gray-500 mt-4">Free, no signup required</p>
+        </div>
+
+        {/* Email Capture for Viral Loop */}
+        <div className="mt-12 max-w-md mx-auto animate-fade-in" style={{ animationDelay: '0.6s' }}>
+          <div className="card bg-gradient-to-br from-primary/10 via-surface to-accent/10 border-primary/40">
+            <h3 className="text-lg font-bold text-white text-center mb-2">
+              Get weekly AI prompt tips
+            </h3>
+            <p className="text-sm text-gray-400 text-center mb-4">
+              Join 5,000+ professionals leveling up their AI skills.
+            </p>
+            <ShareEmailCapture />
+            <p className="text-xs text-gray-500 text-center mt-3">No spam. Unsubscribe anytime.</p>
+          </div>
         </div>
       </section>
     </main>

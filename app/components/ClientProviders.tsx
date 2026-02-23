@@ -3,6 +3,7 @@
 import { AuthProvider, useAuth } from './AuthProvider';
 import AuthModal from './AuthModal';
 import { ToastProvider } from './Toast';
+import AnalyticsProvider from './AnalyticsProvider';
 
 function GlobalAuthModal() {
   const { showAuth, setShowAuth, authMessage } = useAuth();
@@ -17,11 +18,13 @@ function GlobalAuthModal() {
 
 export default function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        {children}
-        <GlobalAuthModal />
-      </ToastProvider>
-    </AuthProvider>
+    <AnalyticsProvider>
+      <AuthProvider>
+        <ToastProvider>
+          {children}
+          <GlobalAuthModal />
+        </ToastProvider>
+      </AuthProvider>
+    </AnalyticsProvider>
   );
 }

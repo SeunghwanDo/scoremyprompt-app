@@ -10,6 +10,7 @@ import AnalysisLoading from './components/AnalysisLoading';
 import DemoMode from './components/DemoMode';
 import type { JobRole } from './types';
 import { TEMPLATES } from './templates/data';
+import { trackJobRoleSelected, trackPromptSubmitted, trackDemoClick, trackSignupInitiated } from './lib/analytics';
 
 const Leaderboard = dynamic(() => import('./components/Leaderboard'), { ssr: false });
 const Waitlist = dynamic(() => import('./components/Waitlist'), { ssr: false });
@@ -75,6 +76,7 @@ export default function HomeClient() {
 
     setLoading(true);
     setError('');
+    trackPromptSubmitted({ jobRole, promptLength: prompt.trim().length });
 
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -115,7 +117,10 @@ export default function HomeClient() {
   const handleExampleClick = (exampleText: string) => {
     setPrompt(exampleText);
     setError('');
-    // Scroll to textarea
+    const example = EXAMPLE_PROMPTS.find(e => e.text === exampleText);
+    if (example) {
+      trackDemoClick({ exampleId: example.label.toLowerCase().replace(/\s+/g, '-'), difficulty: 'example' });
+    }
     document.getElementById('analyze')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
@@ -165,6 +170,7 @@ export default function HomeClient() {
                 onClick={() => {
                   setAuthMessage('Sign in to unlock all features and save your history.');
                   setShowAuth(true);
+                  trackSignupInitiated({ source: 'homepage_nav' });
                 }}
                 className="text-sm px-4 py-1.5 bg-primary/20 border border-primary/40 text-primary rounded-lg hover:bg-primary/30 transition-colors"
               >
@@ -204,7 +210,7 @@ export default function HomeClient() {
               {JOB_ROLES.map((role) => (
                 <button
                   key={role}
-                  onClick={() => setJobRole(role)}
+                  onClick={() => { setJobRole(role); trackJobRoleSelected({ jobRole: role }); }}
                   className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm min-h-[44px] inline-flex items-center ${
                     jobRole === role
                       ? 'bg-primary text-white'

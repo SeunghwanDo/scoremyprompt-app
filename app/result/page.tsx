@@ -16,6 +16,7 @@ import {
   DIMENSION_FEEDBACK,
 } from '../constants';
 import { GUIDES_CONTENT } from '../guides/content';
+import { trackResultViewed, trackShare, trackSignupInitiated } from '../lib/analytics';
 
 // Map each dimension to the most relevant guide slug for improvement suggestions
 const DIMENSION_GUIDE_MAP: Record<string, string> = {
@@ -81,8 +82,10 @@ export default function ResultPage() {
   useEffect(() => {
     const resultData = sessionStorage.getItem('promptResult');
     if (resultData) {
-      setResult(JSON.parse(resultData));
+      const parsed = JSON.parse(resultData);
+      setResult(parsed);
       setLoading(false);
+      trackResultViewed({ score: parsed.overallScore, grade: parsed.grade, jobRole: parsed.jobRole || '' });
     } else {
       router.push('/');
     }
@@ -102,18 +105,21 @@ export default function ResultPage() {
 
   const handleShareTwitter = () => {
     if (!result) return;
+    trackShare({ method: 'twitter', score: result.overallScore, grade: result.grade });
     const text = getShareText('twitter', result.overallScore, result.grade, result.scoreLevel || '', result.jobRole || 'professionals', result.benchmarks?.percentile || 50, shareUrl);
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
   };
 
   const handleShareLinkedIn = () => {
     if (!result) return;
+    trackShare({ method: 'linkedin', score: result.overallScore, grade: result.grade });
     const text = getShareText('linkedin', result.overallScore, result.grade, result.scoreLevel || '', result.jobRole || 'professionals', result.benchmarks?.percentile || 50, shareUrl);
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}&summary=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
   };
 
   const handleCopyLink = async () => {
     if (!result) return;
+    trackShare({ method: 'copy', score: result.overallScore, grade: result.grade });
     const text = getShareText('copy', result.overallScore, result.grade, result.scoreLevel || '', result.jobRole || 'professionals', result.benchmarks?.percentile || 50, shareUrl);
     await navigator.clipboard.writeText(text);
     setCopied(true);
@@ -122,12 +128,14 @@ export default function ResultPage() {
 
   const handleNativeShare = async () => {
     if (!result || !navigator.share) return;
+    trackShare({ method: 'native', score: result.overallScore, grade: result.grade });
     const text = getShareText('copy', result.overallScore, result.grade, result.scoreLevel || '', result.jobRole || 'professionals', result.benchmarks?.percentile || 50, shareUrl);
     navigator.share({ title: 'My PROMPT Score', text, url: shareUrl });
   };
 
   const handleChallenge = async () => {
     if (!result) return;
+    trackShare({ method: 'challenge', score: result.overallScore, grade: result.grade });
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const challengeUrl = `${origin}/challenge?score=${result.overallScore}&grade=${result.grade}`;
     await navigator.clipboard.writeText(challengeUrl);
@@ -209,6 +217,7 @@ export default function ResultPage() {
               onClick={() => {
                 setAuthMessage('Sign in to see all 6 dimension details.');
                 setShowAuth(true);
+                trackSignupInitiated({ source: 'result_nav' });
               }}
               className="text-sm px-4 py-1.5 bg-primary/20 border border-primary/40 text-primary rounded-lg hover:bg-primary/30 transition-colors"
             >
@@ -282,6 +291,7 @@ export default function ResultPage() {
                 onClick={() => {
                   setAuthMessage('Sign up free to unlock all 6 dimension insights.');
                   setShowAuth(true);
+                  trackSignupInitiated({ source: 'result_dimensions' });
                 }}
                 className="btn-primary text-sm font-semibold px-6"
               >
