@@ -1,0 +1,12 @@
+-- ScoreMyPrompt Database Schema — Master Script
+-- Run each file in order in Supabase SQL Editor.
+-- Supabase SQL Editor does not support \i, so copy-paste each file sequentially:
+--
+--   1. 01_tables.sql    — Tables (analyses, waitlist, daily_stats, user_profiles)
+--   2. 02_functions.sql  — Functions (share_id, percentile, handle_new_user, etc.)
+--   3. 03_triggers.sql   — Triggers (on_auth_user_created)
+--   4. 04_views.sql      — Materialized views (leaderboard_weekly)
+--   5. 05_rls.sql        — Row Level Security policies
+--   6. 06_indexes.sql    — Performance indexes
+--
+-- The original schema.sql is kept as a single-file backup.

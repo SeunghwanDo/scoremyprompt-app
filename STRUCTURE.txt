@@ -1,0 +1,153 @@
+promptlab-app/
+│
+├── Configuration Files
+│   ├── package.json                    [Next.js 14, React 18, Tailwind CSS, dependencies]
+│   ├── next.config.js                  [Next.js configuration with API headers]
+│   ├── tailwind.config.js              [Tailwind CSS config with dark theme colors]
+│   ├── postcss.config.js               [PostCSS configuration]
+│   ├── jsconfig.json                   [JavaScript path aliases]
+│   ├── .eslintrc.json                  [ESLint configuration]
+│   ├── .env.example                    [Environment variables template]
+│   └── .gitignore                      [Git ignore rules]
+│
+├── Documentation
+│   ├── README.md                       [Setup, installation, deployment guide]
+│   ├── PROJECT_SUMMARY.md              [Project structure overview]
+│   └── STRUCTURE.txt                   [This file]
+│
+└── app/                                [Next.js App Router directory]
+    │
+    ├── layout.js                       [Root layout with Inter font and SEO metadata]
+    │   - Metadata: Title, description, OG tags
+    │   - Font: Google Inter font
+    │   - Dark background styling
+    │
+    ├── page.js                         [Landing page]
+    │   - Hero section with gradient text
+    │   - Job role selector (6 roles)
+    │   - Prompt textarea input
+    │   - Example prompt buttons
+    │   - Social proof statistics
+    │   - Responsive design
+    │
+    ├── globals.css                     [Global styles and animations]
+    │   - Tailwind CSS imports
+    │   - Custom scrollbar styling
+    │   - Fade-in/slide-in animations
+    │   - Reusable component classes
+    │
+    ├── api/
+    │   └── analyze/
+    │       └── route.js                [POST endpoint for prompt analysis]
+    │           - Accepts: { prompt, jobRole }
+    │           - PROMPT Score system prompt included
+    │           - Mock response ready for Claude API integration
+    │           - Returns: Score, dimensions, feedback, benchmarks
+    │
+    └── result/
+        └── page.js                     [Results page]
+            - Circular progress score visualization
+            - 6 dimension bars with feedback
+            - Benchmark comparison
+            - Strengths and improvements
+            - Actionable suggestions
+            - Share functionality
+            - CTA to PromptTribe
+
+DESIGN SYSTEM
+=============
+
+Colors:
+- Primary Blue:       #3b82f6
+- Accent Purple:      #8b5cf6
+- Background Dark:    #0a0f1a
+- Surface:            #0f172a
+- Border:             #1e293b
+
+Typography:
+- Font: Inter (Google Fonts)
+- Size: Responsive (mobile-first)
+- Colors: White text on dark backgrounds
+
+Components:
+- btn-primary     [Blue button with hover effect]
+- btn-secondary   [Surface button with border]
+- input-field     [Text input with focus ring]
+- card            [Surface with border and padding]
+- text-gradient   [Gradient text (blue to purple)]
+
+Animations:
+- fadeIn          [Opacity + slide down]
+- slideIn         [Opacity + slide left]
+
+FUNCTIONALITY
+=============
+
+Landing Page Flow:
+1. User selects job role
+2. User enters prompt to analyze
+3. User clicks "Analyze My Prompt"
+4. API validates and processes prompt
+5. Redirects to results page
+
+Results Page Flow:
+1. Displays overall PROMPT Score (0-100)
+2. Shows 6 dimension scores with feedback
+3. Displays strengths and improvements
+4. Compares against benchmarks
+5. Offers share functionality
+6. CTA to join PromptTribe
+7. Option to analyze another prompt
+
+PROMPT Score Dimensions
+=======================
+
+P - Precision       [Clarity and specificity]
+R - Relevance       [How well-targeted]
+O - Organization    [Structure and flow]
+M - Methodology     [Clear approach]
+P - Personalization [Tailored to context]
+T - Timeframe       [Timeline and deliverables]
+
+Each scored 0-100, overall score is average.
+
+JOB ROLES SUPPORTED
+===================
+
+- Marketing
+- Design
+- Product
+- Finance
+- Freelance
+- Other
+
+SETUP STEPS
+===========
+
+1. npm install                  [Install dependencies]
+2. cp .env.example .env.local   [Create environment file]
+3. Add ANTHROPIC_API_KEY        [Set your API key]
+4. npm run dev                  [Start dev server]
+5. Open http://localhost:3000   [Access application]
+
+BUILD COMMANDS
+==============
+
+Development:  npm run dev       [Start dev server]
+Build:        npm run build     [Build for production]
+Start:        npm start         [Start production server]
+Lint:         npm run lint      [Run ESLint]
+
+NEXT STEPS
+==========
+
+1. Install @anthropic-ai/sdk
+2. Replace mock response in app/api/analyze/route.js with Claude API call
+3. Add rate limiting for production
+4. Deploy to Vercel or your hosting platform
+5. Monitor API usage and performance
+
+TOTAL FILES: 15
+- Configuration files: 9
+- Documentation: 3
+- Application files: 3
