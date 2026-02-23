@@ -5,15 +5,19 @@ import type { NextRequest } from 'next/server';
 const PROTECTED_PAGES = ['/dashboard', '/history', '/compare', '/pro'];
 
 // API routes that require Authorization header
-const PROTECTED_API_ROUTES = ['/api/analyze-bulk', '/api/export'];
+const PROTECTED_API_ROUTES = ['/api/analyze-bulk', '/api/export', '/api/stripe/checkout', '/api/stripe/portal'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const response = NextResponse.next();
 
-  // Add X-Request-Id to all API requests
+  // Add X-Request-Id to all API requests (both request and response)
   if (pathname.startsWith('/api/')) {
-    response.headers.set('X-Request-Id', crypto.randomUUID());
+    const requestId = crypto.randomUUID();
+    response.headers.set('X-Request-Id', requestId);
+    // Make request ID available to API routes via custom header
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('X-Request-Id', requestId);
   }
 
   // Check protected pages — use cookie-based session detection

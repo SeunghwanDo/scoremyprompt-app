@@ -81,7 +81,58 @@ describe('POST /api/export', () => {
     mockSingle.mockResolvedValueOnce({ data: null, error: { message: 'Not found' } });
 
     const res = await POST(makeRequest({ analysisId: 'test-id' }, 'valid-token'));
-    // Route returns 404 or 500 depending on implementation
     expect(res.status).toBeGreaterThanOrEqual(400);
+  });
+
+  it('returns 400 when analysisId is missing', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } }, error: null });
+
+    mockSingle.mockResolvedValueOnce({ data: { tier: 'pro' }, error: null });
+
+    const res = await POST(makeRequest({}, 'valid-token'));
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.error).toContain('analysisId');
+  });
+
+  it('returns HTML file for valid pro user with analysis', async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } }, error: null });
+
+    // user_profiles -> pro
+    mockSingle.mockResolvedValueOnce({ data: { tier: 'pro' }, error: null });
+    // analyses -> found
+    mockSingle.mockResolvedValueOnce({
+      data: {
+        overall_score: 85,
+        grade: 'A',
+        job_role: 'Marketing',
+        prompt_text: 'Test prompt for export',
+        result_json: {
+          dimensions: {
+            precision: { score: 18, maxScore: 20, feedback: 'Good precision' },
+            role: { score: 12, maxScore: 15, feedback: 'Role defined' },
+            outputFormat: { score: 10, maxScore: 15, feedback: 'Format ok' },
+            missionContext: { score: 16, maxScore: 20, feedback: 'Clear context' },
+            promptStructure: { score: 14, maxScore: 15, feedback: 'Well structured' },
+            tailoring: { score: 15, maxScore: 15, feedback: 'Well tailored' },
+          },
+          strengths: ['Clear objectives', 'Good structure'],
+          improvements: ['Add more constraints'],
+        },
+        rewrite_suggestion: 'Improved version of the prompt',
+        created_at: '2024-01-15T00:00:00Z',
+      },
+      error: null,
+    });
+
+    const res = await POST(makeRequest({ analysisId: 'test-id' }, 'valid-token'));
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toBe('text/html');
+    expect(res.headers.get('Content-Disposition')).toContain('attachment');
+
+    const html = await res.text();
+    expect(html).toContain('Prompt Analysis Report');
+    expect(html).toContain('85');
+    expect(html).toContain('Test prompt for export');
   });
 });

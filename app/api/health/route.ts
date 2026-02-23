@@ -46,13 +46,21 @@ export async function GET() {
   const overallStatus = criticalDown ? 'critical' : partialDown ? 'degraded' : 'ok';
   const statusCode = criticalDown ? 503 : partialDown ? 207 : 200;
 
+  const isProduction = process.env.NODE_ENV === 'production';
+
   return Response.json(
     {
       status: overallStatus,
       timestamp: new Date().toISOString(),
-      services,
-      version: '1.0.0',
-      environment: process.env.NODE_ENV,
+      services: isProduction
+        ? {
+            supabase: { status: supabaseOk ? 'ok' : 'down' },
+            anthropic: { status: anthropicOk ? 'ok' : 'down' },
+            stripe: { status: stripeOk ? 'ok' : 'down' },
+          }
+        : services,
+      // Hide version and environment in production
+      ...(isProduction ? {} : { version: '1.0.0', environment: process.env.NODE_ENV }),
     },
     { status: statusCode }
   );

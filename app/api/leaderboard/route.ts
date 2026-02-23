@@ -40,10 +40,13 @@ function generateDisplayName(jobRole: string, rank: number): string {
   return `${jobRole} ${title} #${rank}`;
 }
 
+const VALID_ROLES = new Set(['Marketing', 'Design', 'Product', 'Finance', 'Freelance', 'Engineering', 'Other']);
+
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
-    const roleFilter = url.searchParams.get('role');
+    const rawRole = url.searchParams.get('role');
+    const roleFilter = rawRole && VALID_ROLES.has(rawRole) ? rawRole : null;
 
     const supabase = getSupabaseAdmin();
 

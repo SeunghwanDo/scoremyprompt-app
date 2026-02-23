@@ -1,19 +1,27 @@
 'use client';
 
+import * as Sentry from '@sentry/nextjs';
 import Link from 'next/link';
+import { useEffect } from 'react';
 
-function getErrorCategory(error: Error) {
+export type ErrorCategory = {
+  label: string;
+  hint: string;
+  icon: 'network' | 'auth' | 'notfound' | 'generic';
+};
+
+export function getErrorCategory(error: Error): ErrorCategory {
   const msg = error?.message?.toLowerCase() || '';
   if (msg.includes('network') || msg.includes('fetch'))
-    return { label: 'Network Error', hint: 'Check your internet connection and try again.', icon: 'network' as const };
+    return { label: 'Network Error', hint: 'Check your internet connection and try again.', icon: 'network' };
   if (msg.includes('auth') || msg.includes('unauthorized') || msg.includes('401'))
-    return { label: 'Authentication Error', hint: 'You may need to sign in again.', icon: 'auth' as const };
+    return { label: 'Authentication Error', hint: 'You may need to sign in again.', icon: 'auth' };
   if (msg.includes('not found') || msg.includes('404'))
-    return { label: 'Not Found', hint: 'The requested resource could not be found.', icon: 'notfound' as const };
-  return { label: 'Something went wrong', hint: 'An unexpected error occurred. Please try again.', icon: 'generic' as const };
+    return { label: 'Not Found', hint: 'The requested resource could not be found.', icon: 'notfound' };
+  return { label: 'Something went wrong', hint: 'An unexpected error occurred. Please try again.', icon: 'generic' };
 }
 
-function ErrorIcon({ type }: { type: 'network' | 'auth' | 'notfound' | 'generic' }) {
+export function ErrorIcon({ type }: { type: ErrorCategory['icon'] }) {
   const iconClass = 'w-16 h-16 mx-auto text-gray-500';
   switch (type) {
     case 'network':
@@ -47,6 +55,10 @@ function ErrorIcon({ type }: { type: 'network' | 'auth' | 'notfound' | 'generic'
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   const category = getErrorCategory(error);
 
+  useEffect(() => {
+    Sentry.captureException(error);
+  }, [error]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark via-surface to-dark flex items-center justify-center p-4">
       <div className="bg-surface border border-border rounded-lg p-8 max-w-md w-full text-center">
@@ -59,8 +71,8 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
           {process.env.NODE_ENV === 'production' ? category.hint : error?.message || category.hint}
         </p>
 
-        {error?.digest && process.env.NODE_ENV !== 'production' && (
-          <p className="text-xs text-gray-600 mb-4 font-mono">Error ID: {error.digest}</p>
+        {error?.digest && (
+          <p className="text-xs text-gray-600 mb-4 font-mono">Ref: {error.digest}</p>
         )}
 
         <div className="flex gap-3 justify-center">

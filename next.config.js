@@ -1,3 +1,5 @@
+const { withSentryConfig } = require('@sentry/nextjs');
+
 /** @type {import('next').NextConfig} */
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
@@ -18,7 +20,7 @@ if (process.env.NODE_ENV === 'production') {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self'",
-      "connect-src 'self' https://*.supabase.co https://us.i.posthog.com https://api.anthropic.com",
+      "connect-src 'self' https://*.supabase.co https://us.i.posthog.com https://api.anthropic.com https://*.sentry.io",
       "frame-src 'self' https://accounts.google.com",
     ].join('; '),
   });
@@ -26,6 +28,9 @@ if (process.env.NODE_ENV === 'production') {
 
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    instrumentationHook: true,
+  },
   images: {
     unoptimized: false,
     formats: ['image/avif', 'image/webp'],
@@ -49,4 +54,10 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = withSentryConfig(nextConfig, {
+  // Suppress source map upload warnings when SENTRY_AUTH_TOKEN is not set
+  silent: true,
+  // Disable source map uploads (enable when Sentry project is configured)
+  disableServerWebpackPlugin: true,
+  disableClientWebpackPlugin: true,
+});

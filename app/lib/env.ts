@@ -11,6 +11,7 @@ const serverEnvSchema = z.object({
   STRIPE_PRICE_ID: z.string().optional(),
   NEXT_PUBLIC_BASE_URL: z.string().optional(),
   NEXT_PUBLIC_APP_URL: z.string().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
 
@@ -21,6 +22,7 @@ const clientEnvSchema = z.object({
   NEXT_PUBLIC_BASE_URL: z.string().optional(),
   NEXT_PUBLIC_APP_URL: z.string().optional(),
   NEXT_PUBLIC_API_URL: z.string().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
@@ -43,6 +45,7 @@ export function getClientEnv(): ClientEnv {
     NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+    NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
   });
   return _clientEnv;
 }
