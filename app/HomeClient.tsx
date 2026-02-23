@@ -39,7 +39,7 @@ const JOB_ROLES: JobRole[] = ['Marketing', 'Design', 'Product', 'Finance', 'Free
 export default function HomeClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, setShowAuth, setAuthMessage, signOut } = useAuth();
+  const { user, supabase, setShowAuth, setAuthMessage, signOut } = useAuth();
   const [prompt, setPrompt] = useState('');
   const [jobRole, setJobRole] = useState<JobRole>('Marketing');
   const [loading, setLoading] = useState(false);
@@ -77,9 +77,17 @@ export default function HomeClient() {
     setError('');
 
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (supabase) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
+      }
+
       const response = await fetch('/api/analyze', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ prompt: prompt.trim(), jobRole }),
       });
 

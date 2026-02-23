@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../components/AuthProvider';
+import EmptyState from '../components/EmptyState';
 import type { Grade, DimensionMeta } from '@/app/types';
 
 type DimensionKey = 'precision' | 'role' | 'outputFormat' | 'missionContext' | 'promptStructure' | 'tailoring';
@@ -13,7 +14,7 @@ interface HistoryDimensionScore {
 }
 
 interface HistoryAnalysis {
-  id: number;
+  id: string;
   date: string;
   prompt: string;
   score: number;
@@ -28,91 +29,6 @@ interface DimensionBarProps {
   dimKey: string;
   data: HistoryDimensionScore;
 }
-
-// TODO: Replace with Supabase query
-const MOCK_ANALYSES: HistoryAnalysis[] = [
-  {
-    id: 1,
-    date: '2025-02-20',
-    prompt:
-      'Create a comprehensive go-to-market strategy for a new SaaS product targeting small businesses with detailed pricing and launch plan.',
-    score: 92,
-    grade: 'S',
-    jobRole: 'Marketing',
-    dimensions: {
-      precision: { score: 18, feedback: 'Excellent specificity' },
-      role: { score: 14, feedback: 'Strong role-specific context' },
-      outputFormat: { score: 15, feedback: 'Clear output structure' },
-      missionContext: { score: 19, feedback: 'Mission context well defined' },
-      promptStructure: { score: 14, feedback: 'Well organized' },
-      tailoring: { score: 12, feedback: 'Good tailoring' },
-    },
-  },
-  {
-    id: 2,
-    date: '2025-02-19',
-    prompt: 'Design a mobile app interface for meditation with user flows and wireframes following iOS guidelines.',
-    score: 78,
-    grade: 'A',
-    jobRole: 'Design',
-    dimensions: {
-      precision: { score: 15, feedback: 'Good clarity' },
-      role: { score: 13, feedback: 'Role context present' },
-      outputFormat: { score: 14, feedback: 'Clear format' },
-      missionContext: { score: 16, feedback: 'Context defined' },
-      promptStructure: { score: 12, feedback: 'Organized' },
-      tailoring: { score: 8, feedback: 'Could be more specific' },
-    },
-  },
-  {
-    id: 3,
-    date: '2025-02-18',
-    prompt: 'Analyze quarterly financial performance and provide recommendations for improving cash flow.',
-    score: 65,
-    grade: 'B',
-    jobRole: 'Finance',
-    dimensions: {
-      precision: { score: 12, feedback: 'Moderate specificity' },
-      role: { score: 12, feedback: 'Role mentioned' },
-      outputFormat: { score: 13, feedback: 'Fair structure' },
-      missionContext: { score: 14, feedback: 'Context present' },
-      promptStructure: { score: 11, feedback: 'Could be better organized' },
-      tailoring: { score: 3, feedback: 'Needs more tailoring' },
-    },
-  },
-  {
-    id: 4,
-    date: '2025-02-17',
-    prompt: 'Write a blog post about AI trends in 2025.',
-    score: 42,
-    grade: 'C',
-    jobRole: 'Marketing',
-    dimensions: {
-      precision: { score: 8, feedback: 'Too vague' },
-      role: { score: 6, feedback: 'Role not specified' },
-      outputFormat: { score: 10, feedback: 'Unclear output' },
-      missionContext: { score: 9, feedback: 'Context missing' },
-      promptStructure: { score: 7, feedback: 'Poor structure' },
-      tailoring: { score: 2, feedback: 'No tailoring' },
-    },
-  },
-  {
-    id: 5,
-    date: '2025-02-16',
-    prompt: 'Create a product roadmap for a new feature.',
-    score: 35,
-    grade: 'D',
-    jobRole: 'Product',
-    dimensions: {
-      precision: { score: 5, feedback: 'Very vague' },
-      role: { score: 4, feedback: 'Missing role' },
-      outputFormat: { score: 6, feedback: 'Unclear format' },
-      missionContext: { score: 5, feedback: 'Missing context' },
-      promptStructure: { score: 4, feedback: 'Poorly structured' },
-      tailoring: { score: 11, feedback: 'Some specifics' },
-    },
-  },
-];
 
 const GRADE_CONFIG: Record<Grade, { color: string }> = {
   S: { color: '#10b981' },
@@ -169,53 +85,87 @@ const GRADES = ['All', 'S', 'A', 'B', 'C', 'D'];
 
 export default function HistoryPage() {
   const router = useRouter();
-  const { user, loading, setShowAuth, setAuthMessage } = useAuth();
+  const { user, supabase, loading: authLoading, setShowAuth, setAuthMessage } = useAuth();
   const [analyses, setAnalyses] = useState<HistoryAnalysis[]>([]);
-  const [filteredAnalyses, setFilteredAnalyses] = useState<HistoryAnalysis[]>([]);
-  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [jobRoleFilter, setJobRoleFilter] = useState<string>('All');
   const [gradeFilter, setGradeFilter] = useState<string>('All');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   const ITEMS_PER_PAGE = 20;
 
+  const fetchAnalyses = useCallback(async (pageNum: number, append: boolean = false) => {
+    if (!supabase) return;
+
+    try {
+      if (!append) setLoading(true);
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+
+      const params = new URLSearchParams({
+        role: jobRoleFilter,
+        grade: gradeFilter,
+        sort: sortBy,
+        page: String(pageNum),
+        limit: String(ITEMS_PER_PAGE),
+      });
+
+      const response = await fetch(`/api/history?${params}`, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setAuthMessage('Sign in to view your analysis history.');
+          setShowAuth(true);
+          router.push('/');
+          return;
+        }
+        return;
+      }
+
+      const result = await response.json();
+
+      if (append) {
+        setAnalyses((prev) => [...prev, ...result.analyses]);
+      } else {
+        setAnalyses(result.analyses);
+      }
+      setTotal(result.total);
+      setHasMore(result.hasMore);
+    } finally {
+      setLoading(false);
+    }
+  }, [supabase, jobRoleFilter, gradeFilter, sortBy, router, setShowAuth, setAuthMessage]);
+
   useEffect(() => {
-    if (!loading && !user) {
+    if (!authLoading && !user) {
       setAuthMessage('Sign in to view your analysis history.');
       setShowAuth(true);
       router.push('/');
     }
-  }, [user, loading, router, setShowAuth, setAuthMessage]);
+  }, [user, authLoading, router, setShowAuth, setAuthMessage]);
 
+  // Fetch when filters change
   useEffect(() => {
-    setAnalyses(MOCK_ANALYSES);
-  }, []);
-
-  // Apply filters and sorting
-  useEffect(() => {
-    let filtered = analyses.filter((a) => {
-      const jobMatch = jobRoleFilter === 'All' || a.jobRole === jobRoleFilter;
-      const gradeMatch = gradeFilter === 'All' || a.grade === gradeFilter;
-      return jobMatch && gradeMatch;
-    });
-
-    // Sort
-    if (sortBy === 'newest') {
-      filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    } else if (sortBy === 'oldest') {
-      filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    } else if (sortBy === 'highest') {
-      filtered.sort((a, b) => b.score - a.score);
-    } else if (sortBy === 'lowest') {
-      filtered.sort((a, b) => a.score - b.score);
+    if (user && supabase) {
+      setPage(1);
+      fetchAnalyses(1, false);
     }
+  }, [user, supabase, jobRoleFilter, gradeFilter, sortBy, fetchAnalyses]);
 
-    setFilteredAnalyses(filtered);
-    setPage(1);
-  }, [analyses, jobRoleFilter, gradeFilter, sortBy]);
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchAnalyses(nextPage, true);
+  };
 
-  if (loading || !user) {
+  if (authLoading || !user) {
     return (
       <main className="min-h-screen bg-gradient-to-b from-dark via-surface to-dark flex items-center justify-center">
         <div className="text-center">
@@ -225,12 +175,6 @@ export default function HistoryPage() {
       </main>
     );
   }
-
-  const paginatedAnalyses = filteredAnalyses.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
-  );
-  const hasMore = page * ITEMS_PER_PAGE < filteredAnalyses.length;
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-dark via-surface to-dark">
@@ -247,20 +191,24 @@ export default function HistoryPage() {
             <a href="/" className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block">
               Home
             </a>
-            <a href="#" className="text-sm text-gray-400 hover:text-white transition-colors">
-              PromptTribe →
+            <a href="/dashboard" className="text-sm text-gray-400 hover:text-white transition-colors">
+              Dashboard
             </a>
           </div>
         </div>
       </nav>
 
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <h2 className="text-4xl font-bold text-white mb-12">Analysis History</h2>
+        <div className="flex items-center justify-between mb-12">
+          <h2 className="text-4xl font-bold text-white">Analysis History</h2>
+          {total > 0 && (
+            <span className="text-sm text-gray-400">{total} analyses</span>
+          )}
+        </div>
 
         {/* Filters */}
         <div className="card mb-8">
           <div className="grid sm:grid-cols-3 gap-4 mb-4">
-            {/* Job Role Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Job Role
@@ -278,7 +226,6 @@ export default function HistoryPage() {
               </select>
             </div>
 
-            {/* Grade Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Grade
@@ -296,7 +243,6 @@ export default function HistoryPage() {
               </select>
             </div>
 
-            {/* Sort */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Sort By
@@ -315,18 +261,28 @@ export default function HistoryPage() {
           </div>
         </div>
 
-        {/* Analyses List */}
-        {paginatedAnalyses.length === 0 ? (
+        {/* Loading State */}
+        {loading && analyses.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-gray-400 text-lg mb-4">No analyses yet.</p>
-            <a href="/" className="btn-primary inline-block">
-              Score your first prompt →
-            </a>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+            <p className="text-gray-400 mt-4">Loading analyses...</p>
           </div>
-        ) : (
+        )}
+
+        {/* Empty State */}
+        {!loading && analyses.length === 0 && (
+          <EmptyState
+            title="No analyses yet"
+            description="Score your first prompt to start building your history."
+            action={{ label: 'Score a Prompt', href: '/' }}
+          />
+        )}
+
+        {/* Analyses List */}
+        {analyses.length > 0 && (
           <>
             <div className="space-y-4 mb-8">
-              {paginatedAnalyses.map((analysis) => (
+              {analyses.map((analysis) => (
                 <div key={analysis.id} className="card">
                   {/* Summary Row */}
                   <button
@@ -371,7 +327,8 @@ export default function HistoryPage() {
                           })}
                         </p>
                         <p className="text-white line-clamp-1">
-                          {analysis.prompt.substring(0, 60)}...
+                          {analysis.prompt.substring(0, 60)}
+                          {analysis.prompt.length > 60 ? '...' : ''}
                         </p>
                         <div className="flex gap-2 mt-2 flex-wrap">
                           <span
@@ -400,19 +357,19 @@ export default function HistoryPage() {
                   </button>
 
                   {/* Expanded Details */}
-                  {expandedId === analysis.id && (
+                  {expandedId === analysis.id && analysis.dimensions && (
                     <div className="mt-6 pt-6 border-t border-border animate-fade-in">
-                      {/* Dimensions */}
                       <div className="mb-6">
                         <h4 className="text-sm font-bold text-white mb-4">PROMPT Dimensions</h4>
                         <div className="grid sm:grid-cols-2 gap-x-6">
                           {(Object.keys(DIMENSION_META) as DimensionKey[]).map((key) => (
-                            <DimensionBar key={key} dimKey={key} data={analysis.dimensions[key]} />
+                            analysis.dimensions[key] ? (
+                              <DimensionBar key={key} dimKey={key} data={analysis.dimensions[key]} />
+                            ) : null
                           ))}
                         </div>
                       </div>
 
-                      {/* Re-analyze Button */}
                       <button className="btn-secondary w-full text-sm font-medium">
                         Re-analyze
                       </button>
@@ -426,7 +383,7 @@ export default function HistoryPage() {
             {hasMore && (
               <div className="text-center">
                 <button
-                  onClick={() => setPage(page + 1)}
+                  onClick={handleLoadMore}
                   className="btn-secondary font-semibold px-8 py-3"
                 >
                   Load More
@@ -440,7 +397,7 @@ export default function HistoryPage() {
       {/* Footer */}
       <footer className="border-t border-border py-8 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400 text-sm">
-          <p>© 2025 ScoreMyPrompt. All rights reserved.</p>
+          <p>&copy; 2025 ScoreMyPrompt. All rights reserved.</p>
         </div>
       </footer>
     </main>

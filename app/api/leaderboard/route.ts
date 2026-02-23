@@ -25,6 +25,21 @@ const MOCK_LEADERBOARD: LeaderboardEntry[] = [
   { rank: 20, display_name: 'Mia L.',     score: 53, grade: 'C', job_role: 'Marketing',   prompt_preview: 'Create quarterly marketing plan with KPIs and timeline...' },
 ];
 
+const ROLE_TITLES: Record<string, string[]> = {
+  Marketing: ['Strategist', 'Creator', 'Growth Pro', 'Marketer'],
+  Design: ['Designer', 'Creative', 'Pixel Pro', 'Artisan'],
+  Product: ['PM', 'Builder', 'Innovator', 'Planner'],
+  Finance: ['Analyst', 'Advisor', 'Numbers Pro', 'Strategist'],
+  Freelance: ['Freelancer', 'Solo Pro', 'Independent', 'Specialist'],
+  Engineering: ['Engineer', 'Developer', 'Coder', 'Architect'],
+};
+
+function generateDisplayName(jobRole: string, rank: number): string {
+  const titles = ROLE_TITLES[jobRole] || ['Expert', 'Pro', 'Specialist', 'Ace'];
+  const title = titles[(rank - 1) % titles.length];
+  return `${jobRole} ${title} #${rank}`;
+}
+
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
@@ -65,7 +80,7 @@ export async function GET(request: Request) {
     // Map view columns to the LeaderboardEntry shape expected by the frontend
     const entries: LeaderboardEntry[] = (data || []).map((row) => ({
       rank: row.rank,
-      display_name: `Player #${row.rank}`,
+      display_name: generateDisplayName(row.job_role, row.rank),
       score: row.overall_score,
       grade: row.grade,
       job_role: row.job_role,

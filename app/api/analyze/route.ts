@@ -82,6 +82,7 @@ async function saveToDatabase(params: {
   result: AnalysisResult;
   ip: string;
   usage: { inputTokens: number; outputTokens: number };
+  userId?: string;
 }): Promise<{ id: string; shareId: string } | null> {
   const supabase = getSupabaseAdmin();
   if (!supabase) return null;
@@ -108,6 +109,7 @@ async function saveToDatabase(params: {
         share_id: shareId,
         input_tokens: params.usage.inputTokens,
         output_tokens: params.usage.outputTokens,
+        ...(params.userId && { user_id: params.userId }),
       })
       .select('id, share_id')
       .single();
@@ -141,6 +143,17 @@ export async function POST(request: Request) {
     }
 
     const { prompt, jobRole } = parsed.data;
+
+    // ─── Extract authenticated user (optional) ───
+    let userId: string | undefined;
+    const authHeader = request.headers.get('authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      const supabase = getSupabaseAdmin();
+      if (supabase) {
+        const { data: { user } } = await supabase.auth.getUser(authHeader.substring(7));
+        if (user) userId = user.id;
+      }
+    }
 
     // ─── Rate Limiting ───
     const ip =
@@ -237,7 +250,7 @@ export async function POST(request: Request) {
       outputTokens: message.usage?.output_tokens || 0,
     };
 
-    const dbRecord = await saveToDatabase({ prompt: prompt.trim(), jobRole, result, ip, usage });
+    const dbRecord = await saveToDatabase({ prompt: prompt.trim(), jobRole, result, ip, usage, userId });
 
     const enrichedResult = {
       ...result,
