@@ -58,11 +58,10 @@ export async function GET(request: Request) {
       return Response.json({ entries: data.slice(0, 20) }, { status: 200 });
     }
 
-    // Query actual view columns: rank, overall_score, grade, job_role, prompt_preview
-    // Note: display_name is NOT in the view — we derive it from prompt_preview
+    // Query leaderboard view + join user_profiles for real display names
     let query = supabase
       .from('leaderboard_weekly')
-      .select('rank, overall_score, grade, job_role, prompt_preview')
+      .select('rank, overall_score, grade, job_role, prompt_preview, user_id')
       .order('rank', { ascending: true })
       .limit(20);
 
@@ -80,19 +79,46 @@ export async function GET(request: Request) {
       return Response.json({ entries: mockData.slice(0, 20) }, { status: 200 });
     }
 
+    // Batch-fetch display names from user_profiles for entries that have user_id
+    const userIds = (data || []).map((row) => row.user_id).filter(Boolean);
+    let profileMap: Record<string, string> = {};
+
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('user_profiles')
+        .select('id, display_name')
+        .in('id', userIds);
+
+      if (profiles) {
+        profileMap = Object.fromEntries(
+          profiles
+            .filter((p) => p.display_name)
+            .map((p) => [p.id, p.display_name])
+        );
+      }
+    }
+
     // Map view columns to the LeaderboardEntry shape expected by the frontend
     const entries: LeaderboardEntry[] = (data || []).map((row) => ({
       rank: row.rank,
-      display_name: generateDisplayName(row.job_role, row.rank),
+      display_name: (row.user_id && profileMap[row.user_id]) || generateDisplayName(row.job_role, row.rank),
       score: row.overall_score,
       grade: row.grade,
       job_role: row.job_role,
       prompt_preview: row.prompt_preview || '',
     }));
 
-    return Response.json({ entries }, { status: 200 });
+    return Response.json({ entries }, {
+      status: 200,
+      headers: {
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+      },
+    });
   } catch (error) {
     logger.error('Leaderboard error', { error: String(error) });
     return Response.json({ entries: MOCK_LEADERBOARD.slice(0, 20) }, { status: 200 });
   }
 }
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 300; // ISR: revalidate every 5 minutes

@@ -161,7 +161,12 @@ export async function GET(request: Request) {
       grade: (row.grade as Grade) || getGradeFromScore(row.overall_score || 0),
     }));
 
-    return Response.json({ stats, trend, recent }, { status: 200 });
+    return Response.json({ stats, trend, recent }, {
+      status: 200,
+      headers: {
+        'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+      },
+    });
   } catch (error) {
     logger.error('Dashboard error', { error: String(error) });
     return Response.json(EMPTY_RESPONSE, { status: 200 });

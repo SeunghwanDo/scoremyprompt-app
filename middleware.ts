@@ -7,9 +7,38 @@ const PROTECTED_PAGES = ['/dashboard', '/history', '/compare', '/pro'];
 // API routes that require Authorization header
 const PROTECTED_API_ROUTES = ['/api/analyze-bulk', '/api/export', '/api/stripe/checkout', '/api/stripe/portal'];
 
+// API routes exempt from CSRF check (read-only GET endpoints, webhooks)
+const CSRF_EXEMPT_ROUTES = ['/api/stripe/webhook', '/api/og', '/api/health'];
+
+function isValidOrigin(request: NextRequest): boolean {
+  const origin = request.headers.get('origin');
+  const host = request.headers.get('host');
+
+  // No origin header = same-origin navigation or non-browser client
+  if (!origin) return true;
+
+  try {
+    const originHost = new URL(origin).host;
+    return originHost === host;
+  } catch {
+    return false;
+  }
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const response = NextResponse.next();
+
+  // CSRF protection: validate Origin header on state-changing API requests
+  if (pathname.startsWith('/api/') && request.method !== 'GET' && request.method !== 'HEAD') {
+    const isExempt = CSRF_EXEMPT_ROUTES.some((route) => pathname.startsWith(route));
+    if (!isExempt && !isValidOrigin(request)) {
+      return NextResponse.json(
+        { error: 'Invalid request origin' },
+        { status: 403 }
+      );
+    }
+  }
 
   // Add X-Request-Id to all API requests (both request and response)
   if (pathname.startsWith('/api/')) {
