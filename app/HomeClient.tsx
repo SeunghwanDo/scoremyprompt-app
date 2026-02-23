@@ -162,7 +162,7 @@ export default function HomeClient() {
       {/* Hero Section */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <div className="text-center mb-12 animate-fade-in">
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6">
+          <h2 className="text-fluid-hero font-bold mb-6">
             Your prompts have a{' '}
             <span className="text-gradient">hidden score</span>.{' '}
             <br className="hidden sm:block" />
@@ -189,7 +189,7 @@ export default function HomeClient() {
                 <button
                   key={role}
                   onClick={() => setJobRole(role)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm ${
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm min-h-[44px] inline-flex items-center ${
                     jobRole === role
                       ? 'bg-primary text-white'
                       : 'bg-dark border border-border text-gray-400 hover:border-primary'

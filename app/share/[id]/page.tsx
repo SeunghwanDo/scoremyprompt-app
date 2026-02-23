@@ -1,14 +1,33 @@
 import ShareClient from './ShareClient';
 import type { Metadata } from 'next';
+import type { Grade } from '@/app/types';
 
 interface PageProps {
   params: Promise<{ id: string }>;
   searchParams: Promise<Record<string, string | undefined>>;
 }
 
-export default async function SharePage({ params }: PageProps) {
+export default async function SharePage({ params, searchParams }: PageProps) {
   const { id } = await params;
-  return <ShareClient shareId={id} />;
+  const sp = await searchParams;
+
+  const data = {
+    score: parseInt(sp.score || '0'),
+    grade: (sp.grade || 'B') as Grade,
+    gradeLabel: sp.gradeLabel || 'Skilled Prompter',
+    jobRole: sp.jobRole || 'Marketing',
+    percentile: parseInt(sp.percentile || '50'),
+    dimensions: {
+      p: parseInt(sp.p || '0'),
+      r: parseInt(sp.r || '0'),
+      o: parseInt(sp.o || '0'),
+      m: parseInt(sp.m || '0'),
+      s: parseInt(sp.s || '0'),
+      t: parseInt(sp.t || '0'),
+    },
+  };
+
+  return <ShareClient shareId={id} data={data} />;
 }
 
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {

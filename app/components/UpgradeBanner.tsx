@@ -77,7 +77,7 @@ export default function UpgradeBanner({ used, limit, onDismiss }: UpgradeBannerP
           {/* Dismiss button */}
           <button
             onClick={handleDismiss}
-            className="flex-shrink-0 text-gray-400 hover:text-gray-300 transition-colors pt-1"
+            className="flex-shrink-0 text-gray-400 hover:text-gray-300 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center -mr-2 -mt-2 rounded-lg"
             aria-label="Dismiss upgrade banner"
           >
             <svg

@@ -8,6 +8,7 @@ interface Toast {
   id: number;
   message: string;
   type: ToastType;
+  dismissing?: boolean;
 }
 
 interface ToastContextValue {
@@ -30,10 +31,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       return updated.slice(-3);
     });
 
-    // Auto-dismiss
+    // Auto-dismiss with exit animation
     if (duration > 0) {
       setTimeout(() => {
-        setToasts((prev) => prev.filter((t) => t.id !== id));
+        setToasts((prev) => prev.map((t) =>
+          t.id === id ? { ...t, dismissing: true } : t
+        ));
+        setTimeout(() => {
+          setToasts((prev) => prev.filter((t) => t.id !== id));
+        }, 300);
       }, duration);
     }
 
@@ -41,7 +47,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const removeToast = useCallback((id: number) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
+    setToasts((prev) => prev.map((t) =>
+      t.id === id ? { ...t, dismissing: true } : t
+    ));
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 300);
   }, []);
 
   return (
@@ -128,14 +139,14 @@ function ToastContainer({ toasts, onRemove }: { toasts: Toast[]; onRemove: (id: 
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className={`${getToastStyles(toast.type)} pointer-events-auto`}
+          className={`${getToastStyles(toast.type)} pointer-events-auto ${toast.dismissing ? 'animate-slide-out' : ''}`}
           role="alert"
         >
           {getIcon(toast.type)}
           <span className="flex-1">{toast.message}</span>
           <button
             onClick={() => onRemove(toast.id)}
-            className="ml-2 text-white/70 hover:text-white transition-colors flex-shrink-0"
+            className="ml-2 text-white/70 hover:text-white transition-colors flex-shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center -mr-3 -my-1 rounded-lg"
             aria-label="Close notification"
           >
             <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

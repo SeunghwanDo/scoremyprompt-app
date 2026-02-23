@@ -18,6 +18,17 @@ body {
   background-color: #0a0f1a;
   color: #ffffff;
   font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: var(--leading-normal);
+  letter-spacing: var(--tracking-normal);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+}
+
+p {
+  line-height: var(--leading-relaxed);
 }
 
 /* Custom scrollbar for dark theme */
@@ -130,6 +141,51 @@ body {
 
 .animate-slide-up {
   animation: slideUp 300ms ease-out;
+}
+
+/* Toast dismiss animation */
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+.animate-slide-out {
+  animation: slideOut 0.3s ease-in-out forwards;
+}
+
+/* Page transition animation */
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-enter {
+  animation: pageEnter 0.3s ease-out;
+}
+
+/* Fluid typography utilities */
+.text-fluid-hero {
+  font-size: clamp(2.25rem, 5vw, 3.75rem);
+}
+
+.text-fluid-h2 {
+  font-size: clamp(1.875rem, 4vw, 3rem);
+}
+
+.text-fluid-h3 {
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
 }
 
 /* Reduced motion preference */

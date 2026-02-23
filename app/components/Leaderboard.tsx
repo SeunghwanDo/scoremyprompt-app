@@ -120,7 +120,7 @@ export default function Leaderboard() {
             <button
               key={filter}
               onClick={() => setSelectedFilter(filter)}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm ${
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm min-h-[44px] inline-flex items-center ${
                 selectedFilter === filter
                   ? 'bg-primary text-white'
                   : 'bg-surface border border-border text-gray-400 hover:border-primary'
