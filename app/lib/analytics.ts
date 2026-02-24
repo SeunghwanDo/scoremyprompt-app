@@ -102,6 +102,25 @@ export function trackPromptSubmitted({ jobRole, promptLength }: { jobRole: strin
   }
 }
 
+// Sprint Plan funnel: page_view → grade_started → grade_completed → share_clicked → waitlist_signup
+// grade_started fires when user clicks "Score My Prompt" (before API call)
+export function trackGradeStarted({ jobRole, promptLength }: { jobRole: string; promptLength: number }): void {
+  if (typeof window === 'undefined') return;
+  window.posthog?.capture('grade_started', { job_role: jobRole, prompt_length: promptLength });
+  if (!isProd) {
+    console.log('[Analytics] grade_started', { job_role: jobRole, prompt_length: promptLength });
+  }
+}
+
+// grade_completed fires when analysis result is received (alias for prompt_analyzed)
+export function trackGradeCompleted({ jobRole, score, grade }: { jobRole: string; score: number; grade: string }): void {
+  if (typeof window === 'undefined') return;
+  window.posthog?.capture('grade_completed', { job_role: jobRole, score, grade });
+  if (!isProd) {
+    console.log('[Analytics] grade_completed', { job_role: jobRole, score, grade });
+  }
+}
+
 export function trackResultViewed({ score, grade, jobRole }: { score: number; grade: string; jobRole: string }): void {
   if (typeof window === 'undefined') return;
   window.posthog?.capture('result_viewed', { score, grade, job_role: jobRole });
@@ -131,5 +150,21 @@ export function trackSharePageCTA({ action }: { action: string }): void {
   window.posthog?.capture('share_page_cta_clicked', { action });
   if (!isProd) {
     console.log('[Analytics] share_page_cta_clicked', { action });
+  }
+}
+
+export function trackProClicked({ source, plan }: { source: string; plan?: string }): void {
+  if (typeof window === 'undefined') return;
+  window.posthog?.capture('pro_clicked', { source, plan: plan || 'pro_monthly' });
+  if (!isProd) {
+    console.log('[Analytics] pro_clicked', { source, plan });
+  }
+}
+
+export function trackChallengeStarted({ score, grade }: { score: number; grade: string }): void {
+  if (typeof window === 'undefined') return;
+  window.posthog?.capture('challenge_started', { score, grade });
+  if (!isProd) {
+    console.log('[Analytics] challenge_started', { score, grade });
   }
 }

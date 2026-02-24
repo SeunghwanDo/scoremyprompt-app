@@ -11,7 +11,7 @@ import DemoMode from './components/DemoMode';
 import Footer from './components/Footer';
 import type { JobRole } from './types';
 import { TEMPLATES } from './templates/data';
-import { trackJobRoleSelected, trackPromptSubmitted, trackDemoClick, trackSignupInitiated } from './lib/analytics';
+import { trackJobRoleSelected, trackPromptSubmitted, trackGradeStarted, trackDemoClick, trackSignupInitiated } from './lib/analytics';
 
 const Leaderboard = dynamic(() => import('./components/Leaderboard'), { ssr: false });
 const Waitlist = dynamic(() => import('./components/Waitlist'), { ssr: false });
@@ -78,6 +78,7 @@ export default function HomeClient() {
     setLoading(true);
     setError('');
     trackPromptSubmitted({ jobRole, promptLength: prompt.trim().length });
+    trackGradeStarted({ jobRole, promptLength: prompt.trim().length });
 
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };

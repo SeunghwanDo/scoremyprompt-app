@@ -1,0 +1,47 @@
+{
+  "name": "WF-0: RSS Feed Collector → Google Sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 6 }]
+        }
+      },
+      "name": "Schedule Trigger (Every 6h)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{$json.feed_url}}",
+        "options": {}
+      },
+      "name": "RSS Feed Read",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": { "value": "YOUR_GOOGLE_SHEETS_ID" },
+        "sheetName": "RSS_Raw",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "title": "={{$json.title}}",
+            "link": "={{$json.link}}",
+            "pubDate": "={{$json.pubDate}}",
+            "source": "={{$json.feed_url}}",
+            "collected_at": "={{$now.toISO()}}"
+          }
+        }
+      },
+      "name": "Append to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [680, 300]
+    }
+  ],
+  "connections": {},
+  "settings": { "timezone": "America/New_York" },
+  "_comment": "RSS feeds to configure: AI news (The Verge AI, TechCrunch AI), Prompt eng blogs, OpenAI blog, Anthropic blog, HN AI posts"
+}

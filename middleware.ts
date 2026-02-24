@@ -25,9 +25,24 @@ function isValidOrigin(request: NextRequest): boolean {
   }
 }
 
+// Maintenance mode: set MAINTENANCE_MODE=true in Vercel env vars to redirect all traffic
+const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'true';
+const MAINTENANCE_BYPASS_PATHS = ['/maintenance', '/api/health', '/api/og', '/favicon.svg'];
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const response = NextResponse.next();
+
+  // Emergency maintenance mode — redirect all non-exempt traffic
+  if (MAINTENANCE_MODE && !MAINTENANCE_BYPASS_PATHS.some((p) => pathname.startsWith(p))) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json(
+        { error: 'Service temporarily unavailable', maintenance: true },
+        { status: 503 }
+      );
+    }
+    return NextResponse.rewrite(new URL('/maintenance', request.url));
+  }
 
   // CSRF protection: validate Origin header on state-changing API requests
   if (pathname.startsWith('/api/') && request.method !== 'GET' && request.method !== 'HEAD') {

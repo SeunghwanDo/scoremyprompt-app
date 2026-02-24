@@ -20,12 +20,21 @@ export const metadata: Metadata = {
     url: 'https://scoremyprompt.com',
     siteName: 'ScoreMyPrompt',
     type: 'website',
+    images: [
+      {
+        url: 'https://scoremyprompt.com/api/og?score=92&grade=S&gradeLabel=Exceptional&jobRole=Marketing&percentile=98&p=95&r=90&o=88&m=93&s=91&t=94',
+        width: 1200,
+        height: 630,
+        alt: 'ScoreMyPrompt - AI Prompt Grading Tool',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'ScoreMyPrompt — Grade Your AI Prompt in 30 Seconds',
     description: 'Get your PROMPT Score and see how you compare with professionals in your field.',
     creator: '@scoremyprompt',
+    images: ['https://scoremyprompt.com/api/og?score=92&grade=S&gradeLabel=Exceptional&jobRole=Marketing&percentile=98&p=95&r=90&o=88&m=93&s=91&t=94'],
   },
 };
 
@@ -46,7 +55,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   name: 'ScoreMyPrompt',
                   url: 'https://scoremyprompt.com',
                   logo: 'https://scoremyprompt.com/favicon.svg',
-                  sameAs: [],
+                  sameAs: [
+                    'https://x.com/scoremyprompt',
+                    'https://linkedin.com/company/scoremyprompt',
+                    'https://youtube.com/@scoremyprompt',
+                    'https://bsky.app/profile/scoremyprompt.com',
+                  ],
                 },
                 {
                   '@type': 'WebApplication',

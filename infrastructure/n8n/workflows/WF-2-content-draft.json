@@ -1,0 +1,61 @@
+{
+  "name": "WF-2: Content Draft Generator (Packing Assistant)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "days", "daysInterval": 1, "triggerAtHour": 8 }]
+        }
+      },
+      "name": "Daily 8AM Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": { "value": "YOUR_GOOGLE_SHEETS_ID" },
+        "sheetName": "ContentCalendar",
+        "filters": {
+          "column": "status",
+          "value": "draft_needed"
+        }
+      },
+      "name": "Read Calendar Slots",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:8b",
+        "prompt": "You are a social media content writer for ScoreMyPrompt, an AI prompt grading tool.\n\nTopic: {{$json.topic}}\nChannel: {{$json.channel}}\nType: {{$json.post_type}}\nTone: Professional but approachable, data-driven\n\nWrite a {{$json.channel}} post about this topic. Include relevant hashtags.\nFor X: max 280 chars. For LinkedIn: 1-3 paragraphs.\n\nDraft:",
+        "options": {}
+      },
+      "name": "Ollama Generate Draft",
+      "type": "n8n-nodes-base.ollama",
+      "position": [680, 300],
+      "_comment": "Connects to local Ollama instance for free AI generation"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": { "value": "YOUR_GOOGLE_SHEETS_ID" },
+        "sheetName": "ContentCalendar",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "draft_copy": "={{$json.response}}",
+            "status": "draft_ready",
+            "generated_at": "={{$now.toISO()}}"
+          }
+        }
+      },
+      "name": "Update Calendar with Draft",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [900, 300]
+    }
+  ],
+  "connections": {},
+  "settings": { "timezone": "America/New_York" },
+  "_comment": "Packing Assistant model: generates drafts in Sheets, human reviews/edits, then natively schedules on each platform"
+}

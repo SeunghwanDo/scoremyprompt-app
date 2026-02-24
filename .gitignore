@@ -36,3 +36,9 @@ yarn-error.log*
 
 # Vercel
 .vercel
+
+# Infrastructure secrets
+infrastructure/n8n/.env
+
+# Docs (not tracked)
+*.docx

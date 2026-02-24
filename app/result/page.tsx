@@ -16,7 +16,7 @@ import {
   DIMENSION_FEEDBACK,
 } from '../constants';
 import { GUIDES_CONTENT } from '../guides/content';
-import { trackResultViewed, trackShare, trackSignupInitiated } from '../lib/analytics';
+import { trackResultViewed, trackGradeCompleted, trackShare, trackSignupInitiated } from '../lib/analytics';
 import Footer from '../components/Footer';
 
 // Map each dimension to the most relevant guide slug for improvement suggestions
@@ -89,6 +89,7 @@ export default function ResultPage() {
       setResult(parsed);
       setLoading(false);
       trackResultViewed({ score: parsed.overallScore, grade: parsed.grade, jobRole: parsed.jobRole || '' });
+      trackGradeCompleted({ jobRole: parsed.jobRole || '', score: parsed.overallScore, grade: parsed.grade });
     } else {
       router.push('/');
     }

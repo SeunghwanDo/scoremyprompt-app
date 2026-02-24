@@ -16,7 +16,11 @@
     "validate": "npm run typecheck && npm run lint && npm run test && npm run build",
     "verify": "npm run typecheck && npm run lint && npm run build",
     "precommit": "npm run typecheck && npm run lint",
-    "deploy:check": "npm run verify && echo 'Ready to deploy!'"
+    "deploy:check": "npm run verify && echo 'Ready to deploy!'",
+    "go-nogo": "node scripts/go-nogo-check.js",
+    "go-nogo:prod": "node scripts/go-nogo-check.js https://scoremyprompt.com",
+    "test:e2e": "npx playwright test",
+    "test:e2e:prod": "E2E_BASE_URL=https://scoremyprompt.com npx playwright test"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.39.0",
@@ -35,6 +39,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
