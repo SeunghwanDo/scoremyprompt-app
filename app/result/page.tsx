@@ -16,7 +16,7 @@ import {
   DIMENSION_FEEDBACK,
 } from '../constants';
 import { GUIDES_CONTENT } from '../guides/content';
-import { trackResultViewed, trackGradeCompleted, trackShare, trackSignupInitiated } from '../lib/analytics';
+import { trackResultViewed, trackGradeCompleted, trackShare, trackSignupInitiated, trackReturnAnalysis } from '../lib/analytics';
 import Footer from '../components/Footer';
 
 // Map each dimension to the most relevant guide slug for improvement suggestions
@@ -90,6 +90,17 @@ export default function ResultPage() {
       setLoading(false);
       trackResultViewed({ score: parsed.overallScore, grade: parsed.grade, jobRole: parsed.jobRole || '' });
       trackGradeCompleted({ jobRole: parsed.jobRole || '', score: parsed.overallScore, grade: parsed.grade });
+
+      // Track return analysis — detect repeat users via localStorage counter
+      try {
+        const countKey = 'smp_analysis_count';
+        const prev = parseInt(localStorage.getItem(countKey) || '0', 10);
+        const newCount = prev + 1;
+        localStorage.setItem(countKey, String(newCount));
+        if (newCount >= 2) {
+          trackReturnAnalysis({ analysisCount: newCount, jobRole: parsed.jobRole || '' });
+        }
+      } catch { /* localStorage unavailable */ }
     } else {
       router.push('/');
     }
@@ -380,6 +391,35 @@ export default function ResultPage() {
             </div>
           );
         })()}
+
+        {/* Quick Fix - Aha Moment */}
+        {result.improvements && result.improvements.length > 0 && (
+          <div className="card mb-8 bg-gradient-to-r from-amber-900/20 to-orange-900/20 border-amber-700/30 animate-fade-in">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-amber-400 text-lg">&#9889;</span>
+              </div>
+              <div className="flex-1">
+                <h4 className="text-lg font-bold text-white mb-1">Quick Fix</h4>
+                <p className="text-sm text-amber-200/80 mb-3">The #1 thing you can do right now to improve your score:</p>
+                <p className="text-gray-200 text-sm leading-relaxed">{result.improvements[0]}</p>
+                <div className="mt-4 flex items-center gap-3">
+                  <button
+                    onClick={handleNewAnalysis}
+                    className="text-sm font-semibold text-amber-400 hover:text-amber-300 transition-colors"
+                  >
+                    Fix it &amp; re-score &rarr;
+                  </button>
+                  {!isPro && result.improvements.length > 1 && (
+                    <span className="text-xs text-gray-500">
+                      +{result.improvements.length - 1} more fixes with full analysis
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Strengths and Improvements */}
         <div className="grid sm:grid-cols-2 gap-6 mb-12" style={{ lineHeight: 'var(--leading-relaxed)' }}>

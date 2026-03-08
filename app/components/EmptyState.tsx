@@ -55,28 +55,34 @@ export default function EmptyState({
       </div>
       <h3 className="text-xl font-semibold text-white mb-2">{title}</h3>
       {description && (
-        <p className="text-gray-400 max-w-sm mb-6">{description}</p>
+        <p className="text-gray-400 max-w-sm mb-4">{description}</p>
       )}
       {action && (
-        action.href ? (
-          <Link
-            href={action.href}
-            className="btn-primary inline-flex items-center gap-2"
-          >
-            {action.label}
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </Link>
-        ) : (
-          <button
-            onClick={action.onClick}
-            className="btn-primary inline-flex items-center gap-2"
-          >
-            {action.label}
-          </button>
-        )
+        <div className="mb-6">
+          {action.href ? (
+            <Link
+              href={action.href}
+              className="btn-primary inline-flex items-center gap-2 text-base px-6 py-3"
+            >
+              {action.label}
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
+          ) : (
+            <button
+              onClick={action.onClick}
+              className="btn-primary inline-flex items-center gap-2 text-base px-6 py-3"
+            >
+              {action.label}
+            </button>
+          )}
+        </div>
       )}
+      {/* Social Proof */}
+      <p className="text-xs text-gray-500 mt-2">
+        Join 5,000+ professionals who&apos;ve scored their prompts
+      </p>
     </div>
   );
 }

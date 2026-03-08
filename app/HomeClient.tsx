@@ -141,12 +141,9 @@ export default function HomeClient() {
             <Link href="/templates" className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block">
               Templates
             </Link>
-            <Link href="/guides" className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block">
-              Guides
+            <Link href="/pricing" className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block">
+              Pricing
             </Link>
-            <a href="#leaderboard" className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block">
-              Leaderboard
-            </a>
             {user ? (
               <div className="flex items-center gap-3">
                 <Link href="/dashboard" className="text-sm text-gray-400 hover:text-white transition-colors hidden sm:block">
@@ -185,20 +182,35 @@ export default function HomeClient() {
 
       {/* Hero Section */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-        <div className="text-center mb-12 animate-fade-in">
+        <div className="text-center mb-8 animate-fade-in">
           <h2 className="text-fluid-hero font-bold mb-6">
-            Your prompts have a{' '}
-            <span className="text-gradient">hidden score</span>.{' '}
+            Write better prompts.{' '}
             <br className="hidden sm:block" />
-            Find out in <span className="text-gradient">5 seconds</span>.
+            Get <span className="text-gradient">better AI results</span>.
           </h2>
           <p className="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto">
-            Get your PROMPT Score across 6 dimensions and see how you compare
-            with professionals in your field. Free, no signup required.
+            Paste your prompt. Get an instant score with actionable fixes.
+            <br className="hidden sm:block" />
+            Free, no signup required.
           </p>
-          <p className="text-sm text-gray-400 mt-4">
-            Join 1,000+ professionals who've scored their prompts
-          </p>
+        </div>
+
+        {/* Social Proof - Above the fold */}
+        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 mb-12 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-bold text-gradient">5,000+</span>
+            <span className="text-sm text-gray-400">Prompts Scored</span>
+          </div>
+          <div className="hidden sm:block w-px h-6 bg-border" />
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-bold text-gradient">92%</span>
+            <span className="text-sm text-gray-400">Find It Helpful</span>
+          </div>
+          <div className="hidden sm:block w-px h-6 bg-border" />
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-bold text-gradient">6</span>
+            <span className="text-sm text-gray-400">AI Dimensions</span>
+          </div>
         </div>
 
         {/* Analysis Form */}
@@ -236,7 +248,7 @@ export default function HomeClient() {
                 setPrompt(e.target.value);
                 setError('');
               }}
-              placeholder="Paste the prompt you want to analyze here..."
+              placeholder="Paste your AI prompt here to get a free score with improvement tips..."
               className="input-field min-h-[200px] text-base resize-none"
               maxLength={5000}
             />
@@ -269,7 +281,7 @@ export default function HomeClient() {
                 Analyzing with AI...
               </span>
             ) : (
-              'Analyze My Prompt'
+              'Score My Prompt — Free'
             )}
           </button>
 
@@ -307,19 +319,24 @@ export default function HomeClient() {
           </div>
         </div>
 
-        {/* Social Proof Stats */}
-        <div className="grid sm:grid-cols-3 gap-6 py-12 border-t border-b border-border">
-          <div className="text-center">
-            <p className="text-3xl font-bold text-gradient">5,000+</p>
-            <p className="text-gray-400 mt-2">Prompts Analyzed</p>
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-gradient">6</p>
-            <p className="text-gray-400 mt-2">Scoring Dimensions</p>
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-gradient">92%</p>
-            <p className="text-gray-400 mt-2">Find It Helpful</p>
+        {/* Trust Signals */}
+        <div className="py-12 border-t border-b border-border">
+          <div className="grid sm:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="text-2xl mb-2">&#9889;</div>
+              <p className="text-white font-semibold mb-1">Instant Results</p>
+              <p className="text-sm text-gray-400">Get your score in under 5 seconds with detailed AI analysis</p>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl mb-2">&#127919;</div>
+              <p className="text-white font-semibold mb-1">Actionable Fixes</p>
+              <p className="text-sm text-gray-400">Not just a score — specific improvements to make your prompts work harder</p>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl mb-2">&#128202;</div>
+              <p className="text-white font-semibold mb-1">Benchmark Yourself</p>
+              <p className="text-sm text-gray-400">See how your prompts compare with other professionals in your field</p>
+            </div>
           </div>
         </div>
       </section>
