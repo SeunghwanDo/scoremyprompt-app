@@ -177,7 +177,7 @@ export default function ResultPage() {
     router.push('/');
   };
 
-  const handleExport = async () => {
+  const handleExport = async (format: 'html' | 'csv' = 'html') => {
     if (!result?.analysisId || !supabase) return;
 
     try {
@@ -191,7 +191,7 @@ export default function ResultPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ analysisId: result.analysisId }),
+        body: JSON.stringify({ analysisId: result.analysisId, format }),
       });
 
       if (!response.ok) {
@@ -204,7 +204,8 @@ export default function ResultPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `prompt-analysis-${result.analysisId}.html`;
+      const ext = format === 'csv' ? 'csv' : 'html';
+      a.download = `prompt-analysis-${result.analysisId}.${ext}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -773,14 +774,23 @@ export default function ResultPage() {
             Analyze Another Prompt
           </button>
           {isPro && result.analysisId ? (
-            <button
-              onClick={handleExport}
-              disabled={exporting}
-              className="btn-secondary font-semibold flex items-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              {exporting ? 'Exporting...' : 'Export Report'}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleExport('html')}
+                disabled={exporting}
+                className="btn-secondary font-semibold flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                {exporting ? 'Exporting...' : 'HTML'}
+              </button>
+              <button
+                onClick={() => handleExport('csv')}
+                disabled={exporting}
+                className="btn-secondary font-semibold flex items-center gap-2 text-sm"
+              >
+                CSV
+              </button>
+            </div>
           ) : !isGuest && !isPro ? (
             <Link
               href="/pricing"

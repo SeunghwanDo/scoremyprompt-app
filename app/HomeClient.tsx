@@ -11,6 +11,7 @@ import DemoMode from './components/DemoMode';
 import Footer from './components/Footer';
 import OnboardingTour from './components/OnboardingTour';
 import ExitIntentModal from './components/ExitIntentModal';
+import PromptQualityIndicator from './components/PromptQualityIndicator';
 import type { JobRole } from './types';
 import { TEMPLATES } from './templates/data';
 import { trackJobRoleSelected, trackPromptSubmitted, trackGradeStarted, trackDemoClick, trackSignupInitiated } from './lib/analytics';
@@ -49,6 +50,20 @@ export default function HomeClient() {
   const [jobRole, setJobRole] = useState<JobRole>('Marketing');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [rateLimitRemaining, setRateLimitRemaining] = useState<number | null>(null);
+  const [retryCountdown, setRetryCountdown] = useState(0);
+
+  // Retry countdown timer
+  useEffect(() => {
+    if (retryCountdown <= 0) return;
+    const timer = setInterval(() => {
+      setRetryCountdown((prev) => {
+        if (prev <= 1) { setError(''); return 0; }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [retryCountdown]);
 
   // Pre-fill from template query param
   useEffect(() => {
@@ -98,8 +113,15 @@ export default function HomeClient() {
         body: JSON.stringify({ prompt: prompt.trim(), jobRole }),
       });
 
+      // Read rate-limit headers
+      const remaining = response.headers.get('X-RateLimit-Remaining');
+      if (remaining !== null) setRateLimitRemaining(parseInt(remaining, 10));
+
       if (response.status === 429) {
-        setError(ERRORS.RATE_LIMIT);
+        const body = await response.json().catch(() => ({}));
+        const retryAfter = body.retryAfter || 60;
+        setRetryCountdown(Math.min(retryAfter, 300));
+        setError(`Too many requests. Please wait ${retryAfter} seconds and try again.`);
         return;
       }
 
@@ -265,37 +287,54 @@ export default function HomeClient() {
                 {prompt.length} / 5,000
               </p>
             </div>
+            <PromptQualityIndicator prompt={prompt} />
           </div>
 
           {/* Error Message */}
           {error && (
             <div id="prompt-error" role="alert" className="mb-4 p-3 bg-red-900/20 border border-red-800 rounded-lg text-red-300 text-sm">
-              {error}
+              {retryCountdown > 0 ? (
+                <div className="flex items-center justify-between gap-3">
+                  <span>{error}</span>
+                  <span className="shrink-0 tabular-nums font-mono text-xs bg-red-900/40 px-2 py-1 rounded">
+                    {Math.floor(retryCountdown / 60)}:{String(retryCountdown % 60).padStart(2, '0')}
+                  </span>
+                </div>
+              ) : error}
             </div>
           )}
 
           {/* Analyze Button */}
           <button
             onClick={handleAnalyze}
-            disabled={loading}
+            disabled={loading || retryCountdown > 0}
             data-tour="analyze-btn"
             aria-label="Score my prompt for free"
-            className="btn-primary w-full font-semibold text-lg py-4"
+            className="btn-primary w-full font-semibold text-lg py-4 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 Analyzing with AI...
               </span>
+            ) : retryCountdown > 0 ? (
+              `Please wait ${retryCountdown}s...`
             ) : (
               'Score My Prompt — Free'
             )}
           </button>
 
-          {/* PROMPT Framework Hint */}
-          <p className="text-xs text-gray-400 text-center mt-4">
-            Scored on 6 dimensions: Precision · Role · Output Format · Mission Context · Structure · Tailoring
-          </p>
+          {/* PROMPT Framework Hint + Rate limit info */}
+          <div className="flex items-center justify-between mt-4">
+            <p className="text-xs text-gray-400">
+              Scored on 6 dimensions: Precision · Role · Output Format · Mission Context · Structure · Tailoring
+            </p>
+            {rateLimitRemaining !== null && rateLimitRemaining <= 5 && (
+              <p className={`text-xs shrink-0 ml-3 ${rateLimitRemaining <= 2 ? 'text-amber-400' : 'text-gray-500'}`}>
+                {rateLimitRemaining} left today
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Analysis Loading State */}

@@ -10,6 +10,20 @@
   box-sizing: border-box;
 }
 
+/* ── A11y: Focus-visible ring for keyboard navigation ── */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── A11y: Minimum touch target for interactive elements on mobile ── */
+@media (pointer: coarse) {
+  button, a, [role="button"], input[type="checkbox"], input[type="radio"], select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
 html {
   scroll-behavior: smooth;
 }

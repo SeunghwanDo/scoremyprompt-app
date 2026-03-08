@@ -123,11 +123,15 @@ export default function OnboardingTour() {
       <div
         className="fixed inset-0 bg-black/40 z-[60] transition-opacity duration-300"
         onClick={handleDismiss}
+        aria-hidden="true"
       />
 
       {/* Tooltip */}
       <div
-        className="fixed z-[61] w-80 transition-all duration-300 ease-out"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Onboarding step ${currentStep + 1} of ${TOUR_STEPS.length}: ${step.title}`}
+        className="fixed z-[61] w-80 max-w-[calc(100vw-2rem)] transition-all duration-300 ease-out"
         style={{
           top: isAbove ? tooltipPos.top : tooltipPos.top,
           left: tooltipPos.left,
@@ -171,13 +175,13 @@ export default function OnboardingTour() {
           <div className="flex items-center justify-between">
             <button
               onClick={handleDismiss}
-              className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+              className="text-xs text-gray-500 hover:text-gray-300 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
             >
               Skip tour
             </button>
             <button
               onClick={handleNext}
-              className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+              className="px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition-colors min-h-[44px] focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
             >
               {isLast ? 'Got it!' : 'Next'}
             </button>

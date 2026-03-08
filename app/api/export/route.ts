@@ -33,7 +33,7 @@ interface AnalysisRow {
   overall_score: number;
   grade: string;
   job_role: string;
-  prompt_text: string;
+  prompt_preview: string;
   result_json: ResultJson | null;
   rewrite_suggestion: string | null;
   created_at: string;
@@ -94,8 +94,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Parse request body
-    const { analysisId } = await request.json();
+    // Parse request body — promptText is sent from client session for privacy
+    const { analysisId, promptText, format = 'html' } = await request.json();
 
     if (!analysisId) {
       return Response.json(
@@ -107,7 +107,7 @@ export async function POST(request: Request) {
     // Query analysis from Supabase
     const { data: analysis, error: analysisError } = await supabase
       .from('analyses')
-      .select('overall_score, grade, job_role, prompt_text, result_json, rewrite_suggestion, created_at')
+      .select('overall_score, grade, job_role, prompt_preview, result_json, rewrite_suggestion, created_at')
       .eq('id', analysisId)
       .eq('user_id', user.id)
       .single();
@@ -119,8 +119,22 @@ export async function POST(request: Request) {
       );
     }
 
+    // Use client-provided promptText, fall back to DB preview, or privacy message
+    const displayPrompt = promptText || analysis.prompt_preview || '(Prompt text not stored for privacy)';
+
+    if (format === 'csv') {
+      const csv = generateAnalysisCSV(analysis as AnalysisRow, displayPrompt);
+      return new Response(csv, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/csv; charset=utf-8',
+          'Content-Disposition': `attachment; filename="prompt-analysis-${analysisId}.csv"`,
+        },
+      });
+    }
+
     // Generate HTML
-    const html = generateAnalysisHTML(analysis as AnalysisRow);
+    const html = generateAnalysisHTML(analysis as AnalysisRow, displayPrompt);
 
     // Return HTML file
     return new Response(html, {
@@ -139,12 +153,11 @@ export async function POST(request: Request) {
   }
 }
 
-function generateAnalysisHTML(analysis: AnalysisRow) {
+function generateAnalysisHTML(analysis: AnalysisRow, displayPrompt: string) {
   const {
     overall_score,
     grade,
     job_role,
-    prompt_text,
     result_json,
     rewrite_suggestion,
     created_at,
@@ -420,7 +433,7 @@ function generateAnalysisHTML(analysis: AnalysisRow) {
 
         <div class="section">
             <h2>Your Prompt</h2>
-            <div class="prompt-text">${escapeHtml(prompt_text)}</div>
+            <div class="prompt-text">${escapeHtml(displayPrompt)}</div>
         </div>
 
         <div class="section">
@@ -518,4 +531,50 @@ function escapeHtml(text: string) {
     "'": '&#039;',
   };
   return text.replace(/[&<>"']/g, (m) => map[m]);
+}
+
+function escapeCsv(text: string): string {
+  if (/[",\n\r]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+  return text;
+}
+
+function generateAnalysisCSV(analysis: AnalysisRow, displayPrompt: string): string {
+  const dims = analysis.result_json?.dimensions;
+  const strengths = analysis.result_json?.strengths || [];
+  const improvements = analysis.result_json?.improvements || [];
+  const rewrite = analysis.rewrite_suggestion || analysis.result_json?.rewriteSuggestion || '';
+
+  const rows: string[][] = [
+    ['ScoreMyPrompt Analysis Report'],
+    ['Date', new Date(analysis.created_at).toLocaleDateString()],
+    ['Job Role', analysis.job_role || 'General'],
+    ['Overall Score', String(analysis.overall_score)],
+    ['Grade', analysis.grade],
+    [],
+    ['Prompt'],
+    [displayPrompt],
+    [],
+    ['Dimension', 'Score', 'Max Score', 'Feedback'],
+    ['Precision', String(dims?.precision?.score || 0), String(dims?.precision?.maxScore || 0), dims?.precision?.feedback || ''],
+    ['Role', String(dims?.role?.score || 0), String(dims?.role?.maxScore || 0), dims?.role?.feedback || ''],
+    ['Output Format', String(dims?.outputFormat?.score || 0), String(dims?.outputFormat?.maxScore || 0), dims?.outputFormat?.feedback || ''],
+    ['Mission Context', String(dims?.missionContext?.score || 0), String(dims?.missionContext?.maxScore || 0), dims?.missionContext?.feedback || ''],
+    ['Prompt Structure', String(dims?.promptStructure?.score || 0), String(dims?.promptStructure?.maxScore || 0), dims?.promptStructure?.feedback || ''],
+    ['Tailoring', String(dims?.tailoring?.score || 0), String(dims?.tailoring?.maxScore || 0), dims?.tailoring?.feedback || ''],
+    [],
+    ['Strengths'],
+    ...strengths.map((s: string) => [s]),
+    [],
+    ['Areas for Improvement'],
+    ...improvements.map((i: string) => [i]),
+  ];
+
+  if (rewrite) {
+    rows.push([], ['Rewrite Suggestion'], [rewrite]);
+  }
+
+  // BOM for Excel UTF-8 compatibility
+  return '\uFEFF' + rows.map((row) => row.map(escapeCsv).join(',')).join('\r\n');
 }

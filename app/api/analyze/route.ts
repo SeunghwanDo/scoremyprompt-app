@@ -21,21 +21,33 @@ const RATE_LIMIT_WINDOW = 60 * 1000;
 const RATE_LIMIT_MAX = 5;
 const DAILY_LIMIT = 20; // Supabase-based daily limit per IP
 
-function checkMemoryRateLimit(ip: string): boolean {
+interface RateLimitResult {
+  allowed: boolean;
+  remaining: number;
+  limit: number;
+  resetAt: number; // Unix timestamp (seconds) when window/day resets
+}
+
+function checkMemoryRateLimit(ip: string): RateLimitResult {
   const now = Date.now();
   const entry = rateLimitMap.get(ip);
 
   if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW) {
     rateLimitMap.set(ip, { windowStart: now, count: 1 });
-    return true;
+    return { allowed: true, remaining: RATE_LIMIT_MAX - 1, limit: RATE_LIMIT_MAX, resetAt: Math.ceil((now + RATE_LIMIT_WINDOW) / 1000) };
   }
 
-  if (entry.count >= RATE_LIMIT_MAX) return false;
+  if (entry.count >= RATE_LIMIT_MAX) {
+    const resetAt = Math.ceil((entry.windowStart + RATE_LIMIT_WINDOW) / 1000);
+    return { allowed: false, remaining: 0, limit: RATE_LIMIT_MAX, resetAt };
+  }
+
   entry.count++;
-  return true;
+  const resetAt = Math.ceil((entry.windowStart + RATE_LIMIT_WINDOW) / 1000);
+  return { allowed: true, remaining: RATE_LIMIT_MAX - entry.count, limit: RATE_LIMIT_MAX, resetAt };
 }
 
-async function checkRateLimit(ip: string): Promise<boolean> {
+async function checkRateLimit(ip: string): Promise<RateLimitResult> {
   const supabase = getSupabaseAdmin();
   if (!supabase) return checkMemoryRateLimit(ip);
 
@@ -54,10 +66,25 @@ async function checkRateLimit(ip: string): Promise<boolean> {
       return checkMemoryRateLimit(ip);
     }
 
-    return (count || 0) < DAILY_LIMIT;
+    const used = count || 0;
+    // Reset at midnight UTC
+    const tomorrow = new Date();
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+    tomorrow.setUTCHours(0, 0, 0, 0);
+    const resetAt = Math.ceil(tomorrow.getTime() / 1000);
+
+    return { allowed: used < DAILY_LIMIT, remaining: Math.max(0, DAILY_LIMIT - used), limit: DAILY_LIMIT, resetAt };
   } catch {
     return checkMemoryRateLimit(ip);
   }
+}
+
+/** Attach rate-limit info headers to a Response */
+function withRateLimitHeaders(response: Response, rl: RateLimitResult): Response {
+  response.headers.set('X-RateLimit-Limit', String(rl.limit));
+  response.headers.set('X-RateLimit-Remaining', String(rl.remaining));
+  response.headers.set('X-RateLimit-Reset', String(rl.resetAt));
+  return response;
 }
 
 // ─── Generate short share ID ───
@@ -170,8 +197,13 @@ export async function POST(request: Request) {
       request.headers.get('x-real-ip') ||
       'unknown';
 
-    if (!(await checkRateLimit(ip))) {
-      throw new AppError('Too many requests. Please wait a moment and try again.', 'RATE_LIMIT', 429);
+    const rateLimit = await checkRateLimit(ip);
+    if (!rateLimit.allowed) {
+      const errResp = Response.json(
+        { error: 'Too many requests. Please wait a moment and try again.', code: 'RATE_LIMIT', retryAfter: rateLimit.resetAt - Math.ceil(Date.now() / 1000) },
+        { status: 429 },
+      );
+      return withRateLimitHeaders(errResp, rateLimit);
     }
 
     // ─── Claude API Call ───
@@ -270,7 +302,7 @@ export async function POST(request: Request) {
       ...(dbRecord && { analysisId: dbRecord.id, shareId: dbRecord.shareId }),
     };
 
-    return Response.json(enrichedResult, { status: 200 });
+    return withRateLimitHeaders(Response.json(enrichedResult, { status: 200 }), rateLimit);
   } catch (error) {
     if (error instanceof AppError) {
       return errorResponse(error);
