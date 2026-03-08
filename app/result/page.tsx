@@ -251,7 +251,7 @@ export default function ResultPage() {
         </div>
       </nav>
 
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+      <section id="main-content" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         {/* Score Hero */}
         <div className="text-center mb-14 animate-fade-in">
           <div className="flex justify-center mb-6">

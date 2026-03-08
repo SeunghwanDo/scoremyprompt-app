@@ -173,7 +173,7 @@ export default function DashboardPage() {
         </div>
       </nav>
 
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+      <section id="main-content" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <h2 className="text-4xl font-bold text-white mb-12">Your Dashboard</h2>
 
         {error && (

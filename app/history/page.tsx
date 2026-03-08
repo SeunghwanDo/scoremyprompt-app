@@ -213,7 +213,7 @@ export default function HistoryPage() {
         </div>
       </nav>
 
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+      <section id="main-content" className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
         <div className="flex items-center justify-between mb-12">
           <h2 className="text-4xl font-bold text-white">Analysis History</h2>
           {total > 0 && (

@@ -1,23 +1,64 @@
+/**
+ * ScoreMyPrompt Design Tokens
+ * Single source of truth for all design values.
+ * Referenced by tailwind.config.js and component styles.
+ */
 :root {
+  /* ─── Brand Colors ─────────────────────────────── */
   --color-primary: #3b82f6;
   --color-primary-hover: #2563eb;
   --color-accent: #8b5cf6;
+  --color-accent-hover: #7c3aed;
+
+  /* ─── Surfaces ─────────────────────────────────── */
   --color-bg: #0a0f1a;
   --color-surface: #0f172a;
   --color-surface-hover: #1e293b;
+  --color-surface-elevated: #1e293b;
+
+  /* ─── Text ─────────────────────────────────────── */
   --color-text: #f8fafc;
   --color-text-muted: #9ca3af;
+  --color-text-subtle: #64748b;
+
+  /* ─── Borders ──────────────────────────────────── */
   --color-border: #1e293b;
+  --color-border-focus: #3b82f6;
+
+  /* ─── Semantic / Status ────────────────────────── */
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
+  --color-info: #3b82f6;
+
+  /* ─── Grade Colors ─────────────────────────────── */
+  --color-grade-s: #10b981;
+  --color-grade-a: #3b82f6;
+  --color-grade-b: #8b5cf6;
+  --color-grade-c: #f59e0b;
+  --color-grade-d: #ef4444;
+
+  /* ─── Spacing ──────────────────────────────────── */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* ─── Border Radius ────────────────────────────── */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-full: 9999px;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 6px rgba(0,0,0,0.3);
-  --shadow-lg: 0 10px 25px rgba(0,0,0,0.4);
+
+  /* ─── Shadows ──────────────────────────────────── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
+
+  /* ─── Typography ───────────────────────────────── */
   --leading-tight: 1.25;
   --leading-normal: 1.5;
   --leading-relaxed: 1.625;
@@ -25,4 +66,17 @@
   --tracking-tight: -0.025em;
   --tracking-normal: -0.01em;
   --tracking-wide: 0.025em;
+
+  /* ─── Transitions ──────────────────────────────── */
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --easing-default: ease-in-out;
+  --easing-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ─── Interactive / Touch Targets ──────────────── */
+  --touch-target-min: 44px;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-ring-color: var(--color-primary);
 }

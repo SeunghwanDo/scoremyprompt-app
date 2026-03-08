@@ -183,7 +183,7 @@ export default function HomeClient() {
       </nav>
 
       {/* Hero Section */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+      <section id="main-content" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
         <div className="text-center mb-8 animate-fade-in">
           <h2 className="text-fluid-hero font-bold mb-6">
             Write better prompts.{' '}
@@ -218,7 +218,7 @@ export default function HomeClient() {
         {/* Analysis Form */}
         <div id="analyze" className="card mb-12 animate-slide-in">
           {/* Job Role Selector */}
-          <div className="mb-6" data-tour="role-selector">
+          <div className="mb-6" data-tour="role-selector" role="group" aria-label="Select your job role">
             <label className="block text-sm font-medium text-gray-300 mb-3">
               Your Job Role
             </label>
@@ -245,18 +245,20 @@ export default function HomeClient() {
               Your Prompt
             </label>
             <textarea
+              id="analyze"
               value={prompt}
               onChange={(e) => {
                 setPrompt(e.target.value);
                 setError('');
               }}
-              placeholder="Paste your AI prompt here to get a free score with improvement tips..."
+              placeholder={PLACEHOLDERS.PROMPT_INPUT}
               className="input-field min-h-[200px] text-base resize-none"
               maxLength={5000}
+              aria-describedby="prompt-hint prompt-error"
             />
             <div className="flex justify-between mt-2">
-              <p className="text-xs text-gray-400">
-                Min 10 characters
+              <p id="prompt-hint" className="text-xs text-gray-400">
+                {HINTS.PROMPT_MIN_CHARS}
               </p>
               <p className={`text-xs ${prompt.length > 4500 ? 'text-amber-400' : 'text-gray-400'}`}>
                 {prompt.length} / 5,000
@@ -266,7 +268,7 @@ export default function HomeClient() {
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-900/20 border border-red-800 rounded-lg text-red-300 text-sm">
+            <div id="prompt-error" role="alert" className="mb-4 p-3 bg-red-900/20 border border-red-800 rounded-lg text-red-300 text-sm">
               {error}
             </div>
           )}
@@ -276,6 +278,7 @@ export default function HomeClient() {
             onClick={handleAnalyze}
             disabled={loading}
             data-tour="analyze-btn"
+            aria-label="Score my prompt for free"
             className="btn-primary w-full font-semibold text-lg py-4"
           >
             {loading ? (

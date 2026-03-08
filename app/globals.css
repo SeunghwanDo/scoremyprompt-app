@@ -15,8 +15,8 @@ html {
 }
 
 body {
-  background-color: #0a0f1a;
-  color: #ffffff;
+  background-color: var(--color-bg);
+  color: var(--color-text);
   font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   line-height: var(--leading-normal);
   letter-spacing: var(--tracking-normal);
@@ -38,21 +38,21 @@ p {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0a0f1a;
+  background: var(--color-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3b82f6;
+  background: var(--color-primary);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #8b5cf6;
+  background: var(--color-accent);
 }
 
 /* Firefox scrollbar */
 * {
-  scrollbar-color: #3b82f6 #0a0f1a;
+  scrollbar-color: var(--color-primary) var(--color-bg);
   scrollbar-width: thin;
 }
 
@@ -200,8 +200,62 @@ p {
   }
 }
 
+/* ─── Accessibility ──────────────────────────────── */
+
 /* Focus ring for keyboard navigation */
 *:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ─── Touch Targets (#14) ────────────────────────── */
+
+/* Ensure minimum 44px touch targets on interactive elements (mobile) */
+@media (pointer: coarse) {
+  button,
+  a,
+  [role="button"],
+  select,
+  input[type="checkbox"],
+  input[type="radio"],
+  .btn-primary,
+  .btn-secondary {
+    min-height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+  }
+
+  /* Inline links don't need width constraint */
+  p a,
+  li a,
+  span a {
+    min-width: auto;
+    min-height: auto;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+}
+
+/* High contrast mode support */
+@media (forced-colors: active) {
+  .btn-primary,
+  .btn-secondary {
+    border: 2px solid ButtonText;
+  }
+
+  .card {
+    border: 1px solid ButtonText;
+  }
 }
