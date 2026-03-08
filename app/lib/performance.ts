@@ -82,6 +82,8 @@ export function reportWebVitals(): void {
       if (lastEntry) {
         const entry = createEntry('LCP', lastEntry.startTime);
         capturePerf('web_vital', entry);
+        checkBudget('LCP', lastEntry.startTime);
+        _collectedVitals.LCP = lastEntry.startTime;
       }
     });
     lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
@@ -94,6 +96,8 @@ export function reportWebVitals(): void {
         if (entry.name === 'first-contentful-paint') {
           const e = createEntry('FCP', entry.startTime);
           capturePerf('web_vital', e);
+          checkBudget('FCP', entry.startTime);
+          _collectedVitals.FCP = entry.startTime;
         }
       }
     });
@@ -117,6 +121,8 @@ export function reportWebVitals(): void {
     const reportCLS = () => {
       const entry = createEntry('CLS', clsValue);
       capturePerf('web_vital', entry);
+      checkBudget('CLS', clsValue);
+      _collectedVitals.CLS = clsValue;
     };
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') reportCLS();
@@ -140,6 +146,8 @@ export function reportWebVitals(): void {
       if (document.visibilityState === 'hidden' && worstINP > 0) {
         const entry = createEntry('INP', worstINP);
         capturePerf('web_vital', entry);
+        checkBudget('INP', worstINP);
+        _collectedVitals.INP = worstINP;
       }
     });
   } catch {}
@@ -153,6 +161,8 @@ export function reportWebVitals(): void {
         if (ttfb >= 0) {
           const e = createEntry('TTFB', ttfb);
           capturePerf('web_vital', e);
+          checkBudget('TTFB', ttfb);
+          _collectedVitals.TTFB = ttfb;
         }
       }
     });
@@ -205,6 +215,57 @@ export async function measureApiCall<T>(
 
     throw error;
   }
+}
+
+// ─── Performance Budget ───
+
+/** Performance budgets — warn if exceeded */
+const PERF_BUDGETS: Record<string, number> = {
+  LCP: 2500,    // ms
+  FCP: 1800,    // ms
+  INP: 200,     // ms
+  CLS: 100,     // (value * 1000)
+  TTFB: 800,    // ms
+};
+
+/**
+ * Check a metric against its budget and log a console warning if exceeded.
+ * Also sends a `perf_budget_exceeded` event to PostHog for monitoring.
+ */
+function checkBudget(name: string, value: number): void {
+  const budget = PERF_BUDGETS[name];
+  if (!budget) return;
+
+  const actual = name === 'CLS' ? value * 1000 : value;
+  if (actual > budget) {
+    const msg = `[Perf Budget] ${name} exceeded: ${Math.round(actual)}ms (budget: ${budget}ms)`;
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(msg);
+    }
+    capturePerf('perf_budget_exceeded', {
+      metric: name,
+      actual: Math.round(actual),
+      budget,
+      overage_pct: Math.round(((actual - budget) / budget) * 100),
+      page: typeof window !== 'undefined' ? window.location.pathname : '',
+    });
+  }
+}
+
+// ─── Vitals Summary (for debug/admin) ───
+
+const _collectedVitals: Record<string, number> = {};
+
+/**
+ * Get collected Web Vitals as a summary object.
+ * Useful for admin overlays or debug panels.
+ */
+export function getVitalsSummary(): Record<string, { value: number; rating: string }> {
+  const result: Record<string, { value: number; rating: string }> = {};
+  for (const [key, val] of Object.entries(_collectedVitals)) {
+    result[key] = { value: val, rating: getRating(key, val) };
+  }
+  return result;
 }
 
 // ─── Page Load Performance ───

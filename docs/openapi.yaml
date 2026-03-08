@@ -1,0 +1,386 @@
+openapi: 3.1.0
+info:
+  title: ScoreMyPrompt API
+  version: 1.0.0
+  description: |
+    AI prompt grading API using the PROMPT Score framework.
+    Grades prompts on 6 dimensions: Precision, Role, Output format,
+    Mission context, Structure, and Tailoring.
+  contact:
+    name: ScoreMyPrompt
+    url: https://scoremyprompt.com
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://scoremyprompt.com
+    description: Production
+  - url: http://localhost:3000
+    description: Development
+
+tags:
+  - name: Analysis
+    description: Prompt analysis and grading
+  - name: Leaderboard
+    description: Community leaderboard
+  - name: Dashboard
+    description: User analytics dashboard
+  - name: Export
+    description: Result export
+  - name: System
+    description: Health and system endpoints
+
+paths:
+  /api/analyze:
+    post:
+      tags: [Analysis]
+      summary: Analyze a prompt
+      description: |
+        Submit a prompt for AI grading. Returns scores across 6 PROMPT dimensions,
+        an overall score, grade (S/A/B/C/D), and improvement suggestions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [prompt]
+              properties:
+                prompt:
+                  type: string
+                  minLength: 10
+                  maxLength: 10000
+                  description: The AI prompt text to analyze
+                jobRole:
+                  type: string
+                  description: User's job role for context-aware grading
+                  enum: [Marketing, Engineering, Design, Product, Sales, Data, Support, General]
+            example:
+              prompt: "You are a senior marketing strategist. Create a comprehensive social media campaign plan for a B2B SaaS product launch targeting CTOs."
+              jobRole: Marketing
+      responses:
+        '200':
+          description: Analysis result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          description: Rate limit exceeded
+          headers:
+            X-RateLimit-Limit:
+              schema: { type: integer }
+            X-RateLimit-Remaining:
+              schema: { type: integer }
+            X-RateLimit-Reset:
+              schema: { type: integer }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /api/analyze-bulk:
+    post:
+      tags: [Analysis]
+      summary: Bulk analyze prompts (Pro only)
+      description: Analyze multiple prompts in a single request. Requires Pro tier.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [prompts]
+              properties:
+                prompts:
+                  type: array
+                  items:
+                    type: object
+                    required: [prompt]
+                    properties:
+                      prompt: { type: string }
+                      jobRole: { type: string }
+                  maxItems: 10
+      responses:
+        '200':
+          description: Bulk analysis results
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Pro tier required
+
+  /api/leaderboard:
+    get:
+      tags: [Leaderboard]
+      summary: Get leaderboard entries
+      description: Returns top-scoring analyses with optional role filtering.
+      parameters:
+        - name: role
+          in: query
+          schema: { type: string }
+          description: Filter by job role
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [weekly, monthly, alltime]
+            default: weekly
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 100
+      responses:
+        '200':
+          description: Leaderboard entries
+          headers:
+            Cache-Control:
+              schema: { type: string }
+              description: "public, s-maxage=300, stale-while-revalidate=600"
+
+  /api/dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Get user dashboard data
+      description: Returns analysis history, trends, and stats for authenticated user.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dashboard data
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/export:
+    get:
+      tags: [Export]
+      summary: Export analysis result
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema: { type: string }
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, csv, pdf]
+            default: json
+      responses:
+        '200':
+          description: Exported result
+
+  /api/badge:
+    get:
+      tags: [Export]
+      summary: Get SVG badge
+      description: Returns an SVG badge image showing the analysis score and grade.
+      parameters:
+        - name: score
+          in: query
+          required: true
+          schema: { type: integer, minimum: 0, maximum: 100 }
+        - name: grade
+          in: query
+          required: true
+          schema: { type: string, enum: [S, A, B, C, D] }
+      responses:
+        '200':
+          description: SVG badge
+          content:
+            image/svg+xml: {}
+
+  /api/embed:
+    get:
+      tags: [Export]
+      summary: Get embeddable result card
+      parameters:
+        - name: id
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Embeddable HTML/JSON result
+
+  /api/og:
+    get:
+      tags: [Export]
+      summary: Generate OG image
+      description: Generates an Open Graph image for social sharing.
+      parameters:
+        - name: score
+          in: query
+          schema: { type: integer }
+        - name: grade
+          in: query
+          schema: { type: string }
+        - name: gradeLabel
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: PNG image
+          content:
+            image/png: {}
+
+  /api/health:
+    get:
+      tags: [System]
+      summary: Health check
+      description: Returns service health status and dependency checks.
+      responses:
+        '200':
+          description: All services healthy
+        '207':
+          description: Partial degradation
+        '503':
+          description: Critical services down
+
+  /api/admin/stats:
+    get:
+      tags: [System]
+      summary: Admin statistics
+      description: Platform-wide aggregated statistics. Protected by ADMIN_SECRET.
+      security:
+        - adminAuth: []
+      responses:
+        '200':
+          description: Platform stats
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/waitlist:
+    post:
+      tags: [System]
+      summary: Join waitlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Successfully added to waitlist
+
+  /api/newsletter:
+    post:
+      tags: [System]
+      summary: Subscribe to newsletter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Subscribed successfully
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Supabase JWT token
+    adminAuth:
+      type: http
+      scheme: bearer
+      description: Admin secret token
+
+  schemas:
+    AnalysisResult:
+      type: object
+      properties:
+        overallScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        grade:
+          type: string
+          enum: [S, A, B, C, D]
+        gradeLabel:
+          type: string
+        scoreLevel:
+          type: string
+        dimensions:
+          type: object
+          properties:
+            precision: { $ref: '#/components/schemas/DimensionScore' }
+            role: { $ref: '#/components/schemas/DimensionScore' }
+            outputFormat: { $ref: '#/components/schemas/DimensionScore' }
+            missionContext: { $ref: '#/components/schemas/DimensionScore' }
+            structure: { $ref: '#/components/schemas/DimensionScore' }
+            tailoring: { $ref: '#/components/schemas/DimensionScore' }
+        quickFixes:
+          type: array
+          items: { type: string }
+        rewriteSuggestion:
+          type: string
+        shareId:
+          type: string
+
+    DimensionScore:
+      type: object
+      properties:
+        score:
+          type: integer
+          minimum: 0
+          maximum: 100
+        feedback:
+          type: string
+        strengths:
+          type: array
+          items: { type: string }
+        improvements:
+          type: array
+          items: { type: string }
+
+    Error:
+      type: object
+      required: [error, code]
+      properties:
+        error:
+          type: string
+        code:
+          type: string
+        details:
+          type: object
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
