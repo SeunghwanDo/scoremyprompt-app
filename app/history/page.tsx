@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../components/AuthProvider';
 import EmptyState from '../components/EmptyState';
+import Skeleton from '../components/Skeleton';
 import type { Grade, DimensionMeta } from '@/app/types';
 import Footer from '../components/Footer';
+import { LOADING, EMPTY, AUTH, CTA } from '../constants/messages';
 
 type DimensionKey = 'precision' | 'role' | 'outputFormat' | 'missionContext' | 'promptStructure' | 'tailoring';
 
@@ -17,7 +19,7 @@ interface HistoryDimensionScore {
 interface HistoryAnalysis {
   id: string;
   date: string;
-  prompt: string;
+  promptPreview: string;
   score: number;
   grade: Grade;
   jobRole: string;
@@ -122,7 +124,7 @@ export default function HistoryPage() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          setAuthMessage('Sign in to view your analysis history.');
+          setAuthMessage(AUTH.SIGN_IN_HISTORY);
           setShowAuth(true);
           router.push('/');
           return;
@@ -146,7 +148,7 @@ export default function HistoryPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      setAuthMessage('Sign in to view your analysis history.');
+      setAuthMessage(AUTH.SIGN_IN_HISTORY);
       setShowAuth(true);
       router.push('/');
     }
@@ -168,10 +170,22 @@ export default function HistoryPage() {
 
   if (authLoading || !user) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-dark via-surface to-dark flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
-          <p className="text-gray-400 mt-4">Loading history...</p>
+      <main className="min-h-screen bg-gradient-to-b from-dark via-surface to-dark">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+          <Skeleton variant="rect" className="h-10 w-64 mb-12" />
+          <Skeleton variant="card" className="mb-8" />
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="bg-surface border border-border rounded-lg p-4 flex items-center gap-4">
+                <Skeleton variant="circle" width={64} height={64} />
+                <div className="flex-1">
+                  <Skeleton variant="rect" className="h-4 w-1/4 mb-2" />
+                  <Skeleton variant="rect" className="h-4 w-3/4 mb-2" />
+                  <Skeleton variant="rect" className="h-3 w-1/3" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </main>
     );
@@ -262,20 +276,28 @@ export default function HistoryPage() {
           </div>
         </div>
 
-        {/* Loading State */}
+        {/* Loading State — Skeleton */}
         {loading && analyses.length === 0 && (
-          <div className="text-center py-16">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
-            <p className="text-gray-400 mt-4">Loading analyses...</p>
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="bg-surface border border-border rounded-lg p-4 flex items-center gap-4">
+                <Skeleton variant="circle" width={64} height={64} />
+                <div className="flex-1">
+                  <Skeleton variant="rect" className="h-4 w-1/4 mb-2" />
+                  <Skeleton variant="rect" className="h-4 w-3/4 mb-2" />
+                  <Skeleton variant="rect" className="h-3 w-1/3" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
         {/* Empty State */}
         {!loading && analyses.length === 0 && (
           <EmptyState
-            title="No analyses yet"
-            description="Score your first prompt to start building your history."
-            action={{ label: 'Score a Prompt', href: '/' }}
+            title={EMPTY.HISTORY_TITLE}
+            description={EMPTY.HISTORY_DESC}
+            action={{ label: CTA.SCORE_A_PROMPT, href: '/' }}
           />
         )}
 
@@ -328,8 +350,7 @@ export default function HistoryPage() {
                           })}
                         </p>
                         <p className="text-white line-clamp-1">
-                          {analysis.prompt.substring(0, 60)}
-                          {analysis.prompt.length > 60 ? '...' : ''}
+                          {analysis.promptPreview || `${analysis.jobRole} prompt — scored ${analysis.score}/100`}
                         </p>
                         <div className="flex gap-2 mt-2 flex-wrap">
                           <span

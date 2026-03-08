@@ -18,6 +18,7 @@ import {
 import { GUIDES_CONTENT } from '../guides/content';
 import { trackResultViewed, trackGradeCompleted, trackShare, trackSignupInitiated, trackReturnAnalysis } from '../lib/analytics';
 import Footer from '../components/Footer';
+import ProfilePrompt, { useProfilePrompt } from '../components/ProfilePrompt';
 
 // Map each dimension to the most relevant guide slug for improvement suggestions
 const DIMENSION_GUIDE_MAP: Record<string, string> = {
@@ -66,6 +67,7 @@ export default function ResultPage() {
   const [exporting, setExporting] = useState(false);
   const isGuest = !user;
   const isPro = tier === 'pro';
+  const { shouldShow: showProfile, dismiss: dismissProfile } = useProfilePrompt();
 
   type SharePlatform = 'twitter' | 'linkedin' | 'bluesky' | 'copy';
 
@@ -784,6 +786,17 @@ export default function ResultPage() {
       </section>
 
       <Footer />
+
+      {/* Progressive Profiling - shows after 3rd analysis */}
+      {showProfile && (
+        <ProfilePrompt
+          onDismiss={dismissProfile}
+          onComplete={(profileData) => {
+            dismissProfile();
+            console.log('Profile collected:', profileData);
+          }}
+        />
+      )}
     </main>
   );
 }

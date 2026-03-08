@@ -9,9 +9,11 @@ import AdBanner from './components/AdBanner';
 import AnalysisLoading from './components/AnalysisLoading';
 import DemoMode from './components/DemoMode';
 import Footer from './components/Footer';
+import OnboardingTour from './components/OnboardingTour';
 import type { JobRole } from './types';
 import { TEMPLATES } from './templates/data';
 import { trackJobRoleSelected, trackPromptSubmitted, trackGradeStarted, trackDemoClick, trackSignupInitiated } from './lib/analytics';
+import { VALIDATION, ERRORS, LOADING, AUTH, PLACEHOLDERS, HINTS, CTA } from './constants/messages';
 
 const Leaderboard = dynamic(() => import('./components/Leaderboard'), { ssr: false });
 const Waitlist = dynamic(() => import('./components/Waitlist'), { ssr: false });
@@ -67,11 +69,11 @@ export default function HomeClient() {
 
   const handleAnalyze = async () => {
     if (!prompt.trim()) {
-      setError('Please enter a prompt to analyze');
+      setError(VALIDATION.PROMPT_EMPTY);
       return;
     }
     if (prompt.trim().length < 10) {
-      setError('Your prompt needs to be at least 10 characters');
+      setError(VALIDATION.PROMPT_TOO_SHORT);
       return;
     }
 
@@ -96,20 +98,20 @@ export default function HomeClient() {
       });
 
       if (response.status === 429) {
-        setError('Too many requests. Please wait a moment and try again.');
+        setError(ERRORS.RATE_LIMIT);
         return;
       }
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || 'Failed to analyze prompt');
+        throw new Error(errData.error || ERRORS.ANALYZE_FAILED);
       }
 
       const data = await response.json();
       sessionStorage.setItem('promptResult', JSON.stringify(data));
       router.push('/result');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred while analyzing your prompt. Please try again.');
+      setError(err instanceof Error ? err.message : ERRORS.ANALYZE_GENERIC);
       console.error('Analysis error:', err);
     } finally {
       setLoading(false);
@@ -167,7 +169,7 @@ export default function HomeClient() {
             ) : (
               <button
                 onClick={() => {
-                  setAuthMessage('Sign in to unlock all features and save your history.');
+                  setAuthMessage(AUTH.SIGN_IN_FEATURES);
                   setShowAuth(true);
                   trackSignupInitiated({ source: 'homepage_nav' });
                 }}
@@ -216,7 +218,7 @@ export default function HomeClient() {
         {/* Analysis Form */}
         <div id="analyze" className="card mb-12 animate-slide-in">
           {/* Job Role Selector */}
-          <div className="mb-6">
+          <div className="mb-6" data-tour="role-selector">
             <label className="block text-sm font-medium text-gray-300 mb-3">
               Your Job Role
             </label>
@@ -273,6 +275,7 @@ export default function HomeClient() {
           <button
             onClick={handleAnalyze}
             disabled={loading}
+            data-tour="analyze-btn"
             className="btn-primary w-full font-semibold text-lg py-4"
           >
             {loading ? (
@@ -359,6 +362,9 @@ export default function HomeClient() {
 
       {/* Footer */}
       <Footer />
+
+      {/* Onboarding Tour for first-time visitors */}
+      <OnboardingTour />
     </main>
   );
 }

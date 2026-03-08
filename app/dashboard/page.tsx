@@ -4,8 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../components/AuthProvider';
 import EmptyState from '../components/EmptyState';
+import Skeleton from '../components/Skeleton';
 import type { Grade } from '@/app/types';
 import Footer from '../components/Footer';
+import { ERRORS, LOADING, EMPTY, AUTH, CTA } from '../constants/messages';
 
 interface DashboardStats {
   totalAnalyses: number;
@@ -22,9 +24,10 @@ interface TrendDataPoint {
 interface RecentAnalysis {
   id: string;
   date: string;
-  prompt: string;
+  promptPreview: string;
   score: number;
   grade: Grade;
+  jobRole?: string;
 }
 
 interface DashboardData {
@@ -75,18 +78,18 @@ export default function DashboardPage() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          setAuthMessage('Sign in to view your dashboard.');
+          setAuthMessage(AUTH.SIGN_IN_DASHBOARD);
           setShowAuth(true);
           router.push('/');
           return;
         }
-        throw new Error('Failed to load dashboard');
+        throw new Error(ERRORS.DASHBOARD_LOAD);
       }
 
       const result = await response.json();
       setData(result);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load dashboard');
+      setError(err instanceof Error ? err.message : ERRORS.DASHBOARD_LOAD);
     } finally {
       setLoading(false);
     }
@@ -94,7 +97,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      setAuthMessage('Sign in to view your dashboard.');
+      setAuthMessage(AUTH.SIGN_IN_DASHBOARD);
       setShowAuth(true);
       router.push('/');
     }
@@ -127,10 +130,18 @@ export default function DashboardPage() {
 
   if (authLoading || !user) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-dark via-surface to-dark flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
-          <p className="text-gray-400 mt-4">Loading dashboard...</p>
+      <main className="min-h-screen bg-gradient-to-b from-dark via-surface to-dark">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+          <Skeleton variant="rect" className="h-10 w-64 mb-12" />
+          <div className="grid sm:grid-cols-4 gap-4 mb-12">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="bg-surface border border-border rounded-lg p-6">
+                <Skeleton variant="rect" className="h-4 w-24 mb-3" />
+                <Skeleton variant="rect" className="h-8 w-16" />
+              </div>
+            ))}
+          </div>
+          <Skeleton variant="card" className="mb-12" />
         </div>
       </main>
     );
@@ -175,17 +186,41 @@ export default function DashboardPage() {
         )}
 
         {loading && !data && (
-          <div className="text-center py-16">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
-            <p className="text-gray-400 mt-4">Loading your data...</p>
+          <div className="space-y-8">
+            <div className="grid sm:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-surface border border-border rounded-lg p-6">
+                  <Skeleton variant="rect" className="h-4 w-24 mb-3" />
+                  <Skeleton variant="rect" className="h-8 w-16" />
+                </div>
+              ))}
+            </div>
+            <div className="bg-surface border border-border rounded-lg p-6">
+              <Skeleton variant="rect" className="h-5 w-48 mb-6" />
+              <Skeleton variant="rect" className="h-64 w-full" />
+            </div>
+            <div className="bg-surface border border-border rounded-lg p-6">
+              <Skeleton variant="rect" className="h-5 w-40 mb-6" />
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-slate-800/30">
+                    <Skeleton variant="circle" width={48} height={48} />
+                    <div className="flex-1">
+                      <Skeleton variant="rect" className="h-4 w-3/4 mb-2" />
+                      <Skeleton variant="rect" className="h-3 w-1/4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
         {!loading && !hasData && !error && (
           <EmptyState
-            title="No analyses yet"
-            description="Score your first prompt to start tracking your progress."
-            action={{ label: 'Score a Prompt', href: '/' }}
+            title={EMPTY.DASHBOARD_TITLE}
+            description={EMPTY.DASHBOARD_DESC}
+            action={{ label: CTA.SCORE_A_PROMPT, href: '/' }}
           />
         )}
 
@@ -299,7 +334,7 @@ export default function DashboardPage() {
                         </div>
 
                         <div>
-                          <p className="text-sm text-gray-300 line-clamp-1">{analysis.prompt}</p>
+                          <p className="text-sm text-gray-300 line-clamp-1">{analysis.promptPreview || `${analysis.jobRole} prompt — scored ${analysis.score}/100`}</p>
                           <p className="text-xs text-gray-400 mt-1">
                             {new Date(analysis.date).toLocaleDateString('en-US', {
                               month: 'short',
