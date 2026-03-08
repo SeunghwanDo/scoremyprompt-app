@@ -106,7 +106,7 @@ export default function ProfilePrompt({ onDismiss, onComplete }: ProfilePromptPr
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleSkip} />
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleSkip} role="button" tabIndex={-1} aria-label="Close" onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleSkip(); }} />
 
       {/* Modal */}
       <div className="relative bg-surface border border-border rounded-2xl p-6 max-w-md w-full shadow-2xl animate-fade-in">

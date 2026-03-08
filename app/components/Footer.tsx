@@ -1,11 +1,24 @@
+import LanguageSwitcher from './LanguageSwitcher';
+
 export default function Footer() {
   return (
     <footer className="border-t border-border py-8 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-gray-400 text-sm">
-            &copy; {new Date().getFullYear()} ScoreMyPrompt. All rights reserved.
-          </p>
+          <div className="flex items-center gap-4 text-sm">
+            <p className="text-gray-400">
+              &copy; {new Date().getFullYear()} ScoreMyPrompt
+            </p>
+            <span className="text-gray-600 hidden sm:inline">·</span>
+            <a href="/privacy" className="text-gray-500 hover:text-white transition-colors">
+              Privacy
+            </a>
+            <a href="/terms" className="text-gray-500 hover:text-white transition-colors">
+              Terms
+            </a>
+            <span className="text-gray-600 hidden sm:inline">·</span>
+            <LanguageSwitcher />
+          </div>
           <div className="flex items-center gap-4">
             {/* X / Twitter */}
             <a

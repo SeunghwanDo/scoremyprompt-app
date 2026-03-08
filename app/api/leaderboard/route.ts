@@ -1,5 +1,6 @@
 import { getSupabaseAdmin } from '@/app/lib/supabase';
 import { logger } from '@/app/lib/logger';
+import { cacheHeaders, TTL } from '@/app/lib/cache';
 import type { LeaderboardEntry } from '@/app/types';
 
 const MOCK_LEADERBOARD: LeaderboardEntry[] = [
@@ -110,9 +111,7 @@ export async function GET(request: Request) {
 
     return Response.json({ entries }, {
       status: 200,
-      headers: {
-        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-      },
+      headers: cacheHeaders.public(TTL.LEADERBOARD),
     });
   } catch (error) {
     logger.error('Leaderboard error', { error: String(error) });

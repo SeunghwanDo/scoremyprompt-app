@@ -115,10 +115,12 @@ export default function Leaderboard() {
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8 pb-4 border-b border-border">
+        <div className="flex flex-wrap gap-2 mb-8 pb-4 border-b border-border" role="tablist" aria-label="Filter by job role">
           {JOB_ROLE_FILTERS.map((filter) => (
             <button
               key={filter}
+              role="tab"
+              aria-selected={selectedFilter === filter}
               onClick={() => setSelectedFilter(filter)}
               className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm min-h-[44px] inline-flex items-center ${
                 selectedFilter === filter
@@ -132,8 +134,11 @@ export default function Leaderboard() {
         </div>
 
         {/* Loading State */}
+        <div aria-live="polite" aria-atomic="true" className="sr-only">
+          {loading ? 'Loading leaderboard...' : `${entries.length} entries loaded`}
+        </div>
         {loading && (
-          <div className="space-y-3">
+          <div className="space-y-3" aria-busy="true" aria-label="Loading leaderboard">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="card animate-pulse">
                 <div className="flex items-center gap-4">

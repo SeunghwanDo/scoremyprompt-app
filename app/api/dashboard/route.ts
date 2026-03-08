@@ -1,5 +1,7 @@
 import { getSupabaseAdmin } from '@/app/lib/supabase';
 import { logger } from '@/app/lib/logger';
+import { unauthorizedResponse } from '@/app/lib/errors';
+import { cacheHeaders } from '@/app/lib/cache';
 import type { Grade } from '@/app/types';
 
 interface DashboardStats {
@@ -17,7 +19,7 @@ interface TrendDataPoint {
 interface RecentAnalysis {
   id: string;
   date: string;
-  prompt: string;
+  promptPreview: string;
   score: number;
   grade: Grade;
 }
@@ -52,7 +54,7 @@ export async function GET(request: Request) {
     // ─── Auth ───
     const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return unauthorizedResponse();
     }
 
     const supabase = getSupabaseAdmin();
@@ -62,7 +64,7 @@ export async function GET(request: Request) {
 
     const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.substring(7));
     if (authError || !user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return unauthorizedResponse();
     }
 
     const userId = user.id;
@@ -144,7 +146,7 @@ export async function GET(request: Request) {
     // ─── Recent: last 5 analyses ───
     const { data: recentData, error: recentError } = await supabase
       .from('analyses')
-      .select('id, created_at, prompt_text, overall_score, grade')
+      .select('id, created_at, overall_score, grade, job_role')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(5);
@@ -156,16 +158,14 @@ export async function GET(request: Request) {
     const recent: RecentAnalysis[] = (recentData || []).map((row) => ({
       id: row.id,
       date: new Date(row.created_at).toISOString().split('T')[0],
-      prompt: row.prompt_text?.substring(0, 80) || '',
+      promptPreview: `${row.job_role || 'General'} prompt — scored ${row.overall_score || 0}/100`,
       score: row.overall_score || 0,
       grade: (row.grade as Grade) || getGradeFromScore(row.overall_score || 0),
     }));
 
     return Response.json({ stats, trend, recent }, {
       status: 200,
-      headers: {
-        'Cache-Control': 'private, no-cache, no-store, must-revalidate',
-      },
+      headers: cacheHeaders.none(),
     });
   } catch (error) {
     logger.error('Dashboard error', { error: String(error) });

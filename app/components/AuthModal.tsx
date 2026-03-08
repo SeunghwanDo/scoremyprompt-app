@@ -90,7 +90,9 @@ export default function AuthModal({ isOpen, onClose, message }: AuthModalProps) 
           {/* Email Input */}
           <form onSubmit={handleMagicLink} className="space-y-4 mb-6">
             <div>
+              <label htmlFor="auth-email" className="sr-only">Email address</label>
               <input
+                id="auth-email"
                 type="email"
                 value={email}
                 onChange={(e) => {
@@ -101,11 +103,12 @@ export default function AuthModal({ isOpen, onClose, message }: AuthModalProps) 
                 className="input-field"
                 disabled={loading}
                 autoComplete="email"
+                aria-describedby={error ? 'auth-email-error' : undefined}
               />
             </div>
 
             {error && (
-              <p className="text-sm text-red-400" role="alert">{error}</p>
+              <p id="auth-email-error" className="text-sm text-red-400" role="alert">{error}</p>
             )}
 
             <button

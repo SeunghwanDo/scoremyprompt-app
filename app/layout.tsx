@@ -14,6 +14,24 @@ export const metadata: Metadata = {
   description: 'Get your PROMPT Score and see how you compare with professionals in your field. Free, no signup required.',
   keywords: 'AI prompt grader, score my prompt, prompt engineering, prompt analysis, PROMPT score, ChatGPT prompt, Claude prompt, AI writing, prompt optimization, free prompt tool',
   authors: [{ name: 'ScoreMyPrompt' }],
+  alternates: {
+    canonical: 'https://scoremyprompt.com',
+    languages: {
+      en: 'https://scoremyprompt.com',
+      ko: 'https://scoremyprompt.com?lang=ko',
+    },
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   openGraph: {
     title: 'ScoreMyPrompt — Grade Your AI Prompt in 30 Seconds',
     description: 'Get your PROMPT Score and see how you compare with professionals in your field.',
@@ -77,6 +95,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     { '@type': 'Offer', price: '9.99', priceCurrency: 'USD', name: 'Pro', billingIncrement: 'P1M' },
                   ],
                   // aggregateRating: Real user review data will be added post-launch
+                },
+                {
+                  '@type': 'BreadcrumbList',
+                  itemListElement: [
+                    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://scoremyprompt.com' },
+                    { '@type': 'ListItem', position: 2, name: 'Templates', item: 'https://scoremyprompt.com/templates' },
+                    { '@type': 'ListItem', position: 3, name: 'Guides', item: 'https://scoremyprompt.com/guides' },
+                    { '@type': 'ListItem', position: 4, name: 'Pricing', item: 'https://scoremyprompt.com/pricing' },
+                  ],
                 },
                 {
                   '@type': 'FAQPage',

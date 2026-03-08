@@ -5,18 +5,18 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from './components/AuthProvider';
 import dynamic from 'next/dynamic';
-import AdBanner from './components/AdBanner';
 import AnalysisLoading from './components/AnalysisLoading';
-import DemoMode from './components/DemoMode';
-import Footer from './components/Footer';
-import OnboardingTour from './components/OnboardingTour';
-import ExitIntentModal from './components/ExitIntentModal';
 import PromptQualityIndicator from './components/PromptQualityIndicator';
 import type { JobRole } from './types';
 import { TEMPLATES } from './templates/data';
 import { trackJobRoleSelected, trackPromptSubmitted, trackGradeStarted, trackDemoClick, trackSignupInitiated } from './lib/analytics';
 import { VALIDATION, ERRORS, LOADING, AUTH, PLACEHOLDERS, HINTS, CTA } from './constants/messages';
 
+const AdBanner = dynamic(() => import('./components/AdBanner'), { ssr: false });
+const DemoMode = dynamic(() => import('./components/DemoMode'), { ssr: false });
+const Footer = dynamic(() => import('./components/Footer'), { ssr: false });
+const OnboardingTour = dynamic(() => import('./components/OnboardingTour'), { ssr: false });
+const ExitIntentModal = dynamic(() => import('./components/ExitIntentModal'), { ssr: false });
 const Leaderboard = dynamic(() => import('./components/Leaderboard'), { ssr: false });
 const Waitlist = dynamic(() => import('./components/Waitlist'), { ssr: false });
 

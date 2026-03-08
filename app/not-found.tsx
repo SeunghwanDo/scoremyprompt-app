@@ -1,4 +1,11 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: '404 - Page Not Found | ScoreMyPrompt',
+  description: 'The page you are looking for does not exist.',
+  robots: { index: false, follow: false },
+};
 
 export default function NotFound() {
   return (
@@ -15,8 +22,8 @@ export default function NotFound() {
           </svg>
         </div>
 
-        <div className="text-7xl font-bold text-gradient mb-4">404</div>
-        <h2 className="text-2xl font-bold text-white mb-3">Page Not Found</h2>
+        <div className="text-7xl font-bold text-gradient mb-4" aria-hidden="true">404</div>
+        <h1 className="text-2xl font-bold text-white mb-3">Page Not Found</h1>
         <p className="text-gray-400 mb-8">
           The page you&apos;re looking for might have been moved or no longer exists.
         </p>
