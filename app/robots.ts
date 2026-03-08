@@ -8,12 +8,17 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/dashboard', '/history', '/pro/'],
+        disallow: ['/api/', '/dashboard', '/history', '/pro/', '/offline'],
       },
       {
         userAgent: 'Googlebot',
         allow: '/',
         disallow: ['/api/'],
+      },
+      // Block aggressive AI training crawlers
+      {
+        userAgent: ['GPTBot', 'ChatGPT-User', 'CCBot', 'anthropic-ai'],
+        disallow: ['/'],
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,

@@ -31,11 +31,11 @@ const MAINTENANCE_BYPASS_PATHS = ['/maintenance', '/api/health', '/api/og', '/fa
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const response = NextResponse.next();
+  const isApiRoute = pathname.startsWith('/api/');
 
   // Emergency maintenance mode — redirect all non-exempt traffic
   if (MAINTENANCE_MODE && !MAINTENANCE_BYPASS_PATHS.some((p) => pathname.startsWith(p))) {
-    if (pathname.startsWith('/api/')) {
+    if (isApiRoute) {
       return NextResponse.json(
         { error: 'Service temporarily unavailable', maintenance: true },
         { status: 503 }
@@ -45,40 +45,13 @@ export function middleware(request: NextRequest) {
   }
 
   // CSRF protection: validate Origin header on state-changing API requests
-  if (pathname.startsWith('/api/') && request.method !== 'GET' && request.method !== 'HEAD') {
+  if (isApiRoute && request.method !== 'GET' && request.method !== 'HEAD') {
     const isExempt = CSRF_EXEMPT_ROUTES.some((route) => pathname.startsWith(route));
     if (!isExempt && !isValidOrigin(request)) {
       return NextResponse.json(
         { error: 'Invalid request origin' },
         { status: 403 }
       );
-    }
-  }
-
-  // Add X-Request-Id to all API requests (both request and response)
-  if (pathname.startsWith('/api/')) {
-    const requestId = crypto.randomUUID();
-    response.headers.set('X-Request-Id', requestId);
-    // Make request ID available to API routes via custom header
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set('X-Request-Id', requestId);
-  }
-
-  // Check protected pages — use cookie-based session detection
-  if (PROTECTED_PAGES.some((route) => pathname.startsWith(route))) {
-    // Supabase stores the session in cookies with this pattern
-    const hasSession =
-      request.cookies.has('sb-access-token') ||
-      request.cookies.has('sb-refresh-token') ||
-      // Supabase v2 PKCE cookies use a project-ref based name
-      Array.from(request.cookies.getAll()).some(
-        (c) => c.name.startsWith('sb-') && c.name.endsWith('-auth-token')
-      );
-
-    if (!hasSession) {
-      const loginUrl = new URL('/', request.url);
-      loginUrl.searchParams.set('auth', 'required');
-      return NextResponse.redirect(loginUrl);
     }
   }
 
@@ -93,7 +66,35 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  return response;
+  // Check protected pages — use cookie-based session detection
+  if (PROTECTED_PAGES.some((route) => pathname.startsWith(route))) {
+    const hasSession =
+      request.cookies.has('sb-access-token') ||
+      request.cookies.has('sb-refresh-token') ||
+      Array.from(request.cookies.getAll()).some(
+        (c) => c.name.startsWith('sb-') && c.name.endsWith('-auth-token')
+      );
+
+    if (!hasSession) {
+      const loginUrl = new URL('/', request.url);
+      loginUrl.searchParams.set('auth', 'required');
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  // API routes: inject X-Request-Id into request + response headers
+  if (isApiRoute) {
+    const requestId = crypto.randomUUID();
+    const response = NextResponse.next({
+      request: {
+        headers: new Headers([...request.headers.entries(), ['x-request-id', requestId]]),
+      },
+    });
+    response.headers.set('x-request-id', requestId);
+    return response;
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {

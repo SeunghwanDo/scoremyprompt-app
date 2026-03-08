@@ -18,12 +18,16 @@ if (process.env.NODE_ENV === 'production') {
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://us.i.posthog.com",
+      "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://us.i.posthog.com https://js.stripe.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https:",
       "font-src 'self'",
-      "connect-src 'self' https://*.supabase.co https://us.i.posthog.com https://api.anthropic.com https://*.sentry.io",
-      "frame-src 'self' https://accounts.google.com",
+      "connect-src 'self' https://*.supabase.co https://us.i.posthog.com https://api.anthropic.com https://*.sentry.io https://api.stripe.com",
+      "frame-src 'self' https://accounts.google.com https://js.stripe.com https://checkout.stripe.com",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "upgrade-insecure-requests",
+      "worker-src 'self'",
     ].join('; '),
   });
 }
@@ -61,6 +65,35 @@ const nextConfig = {
           {
             key: 'X-Robots-Tag',
             value: 'noindex',
+          },
+        ],
+      },
+      // Static assets — long cache with immutable
+      {
+        source: '/icons/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/manifest.json',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400, stale-while-revalidate=604800',
+          },
+        ],
+      },
+      // Guide pages — moderate cache
+      {
+        source: '/guides/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600, stale-while-revalidate=86400',
           },
         ],
       },

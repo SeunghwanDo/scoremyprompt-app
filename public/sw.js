@@ -1,9 +1,10 @@
 /**
- * ScoreMyPrompt — Service Worker
- * Provides: offline fallback, static asset caching, network-first API strategy.
+ * ScoreMyPrompt — Service Worker v2
+ * Provides: offline fallback, static asset caching, network-first page strategy,
+ *           navigation preload, SW update signaling.
  */
 
-const CACHE_NAME = 'smp-v1';
+const CACHE_NAME = 'smp-v2';
 const OFFLINE_URL = '/offline';
 
 // Static assets to pre-cache on install
@@ -23,17 +24,31 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate — clean old caches
+// Activate — clean old caches, enable navigation preload
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
+    Promise.all([
+      // Purge stale caches
+      caches.keys().then((keys) =>
+        Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+      ),
+      // Enable navigation preload if supported
+      self.registration.navigationPreload
+        ? self.registration.navigationPreload.enable()
+        : Promise.resolve(),
+    ])
   );
   self.clients.claim();
 });
 
-// Fetch — network-first for pages/API, cache-first for static assets
+// Notify all clients of a new SW version
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// Fetch — network-first for pages, cache-first for static assets
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -67,7 +82,36 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Pages — network-first with offline fallback
+  // Navigation requests — use preload response if available, then network, then cache
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      (async () => {
+        try {
+          // Try navigation preload first
+          const preloadResponse = event.preloadResponse
+            ? await event.preloadResponse
+            : undefined;
+
+          if (preloadResponse) return preloadResponse;
+
+          // Fall back to network
+          const networkResponse = await fetch(request);
+          if (networkResponse.ok) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return networkResponse;
+        } catch {
+          // Offline — try cache, then offline page
+          const cached = await caches.match(request);
+          return cached || (await caches.match(OFFLINE_URL)) || new Response('Offline', { status: 503 });
+        }
+      })()
+    );
+    return;
+  }
+
+  // Other same-origin GET — network-first with cache fallback
   event.respondWith(
     fetch(request)
       .then((response) => {

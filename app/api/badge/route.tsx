@@ -2,6 +2,7 @@ import { ImageResponse } from '@vercel/og';
 import { z } from 'zod';
 import { GRADE_COLORS } from '@/app/constants';
 import type { Grade } from '@/app/types';
+import { logger } from '@/app/lib/logger';
 
 const GRADE_LABELS: Record<Grade, string> = {
   S: 'Exceptional',
@@ -221,7 +222,7 @@ export async function GET(request: Request) {
       }
     );
   } catch (error) {
-    console.error('Badge image generation error:', error);
+    logger.error('Badge image generation error', { error: String(error) });
     return new Response('Failed to generate badge image', { status: 500 });
   }
 }

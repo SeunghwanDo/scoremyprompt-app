@@ -162,6 +162,7 @@ function getScoreLevel(grade: Grade): string {
 }
 
 export async function POST(request: Request) {
+  const startTime = Date.now();
   try {
     const body = await request.json();
 
@@ -302,12 +303,24 @@ export async function POST(request: Request) {
       ...(dbRecord && { analysisId: dbRecord.id, shareId: dbRecord.shareId }),
     };
 
+    const durationMs = Date.now() - startTime;
+    logger.info('Analysis completed', {
+      durationMs,
+      jobRole,
+      score: result.overallScore,
+      grade: result.grade,
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
+    });
+
     return withRateLimitHeaders(Response.json(enrichedResult, { status: 200 }), rateLimit);
   } catch (error) {
+    const durationMs = Date.now() - startTime;
     if (error instanceof AppError) {
+      logger.warn('Analysis failed', { durationMs, errorCode: error.code, status: error.statusCode });
       return errorResponse(error);
     }
-    logger.error('Analysis error', { error: String(error) });
+    logger.error('Analysis error', { error: String(error), durationMs });
     return errorResponse(error as Error);
   }
 }

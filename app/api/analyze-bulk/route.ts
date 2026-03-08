@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { getSupabaseAdmin } from '@/app/lib/supabase';
 import { PROMPT_SCORE_SYSTEM } from '@/app/constants/system-prompt';
 import { AppError, errorResponse } from '@/app/lib/errors';
+import { logger } from '@/app/lib/logger';
 
 const BULK_RATE_LIMIT_MAP = new Map<string, { windowStart: number; count: number }>();
 const BULK_RATE_LIMIT_WINDOW = 60 * 60 * 1000;
@@ -92,7 +93,7 @@ export async function POST(request: Request) {
     return Response.json({ results }, { status: 200 });
   } catch (error) {
     if (error instanceof AppError) return errorResponse(error);
-    console.error('Bulk analyze error:', error);
+    logger.error('Bulk analyze error', { error: String(error) });
     return errorResponse(error as Error);
   }
 }
@@ -129,11 +130,11 @@ async function analyzePrompt(prompt: string, jobRole: string): Promise<Record<st
       const jsonStr = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
       return { ...JSON.parse(jsonStr), jobRole };
     } catch {
-      console.error('Failed to parse Claude response:', responseText);
+      logger.error('Failed to parse Claude response', { error: responseText });
       return getMockAnalysis(jobRole);
     }
   } catch (error) {
-    console.error('Prompt analysis error:', error);
+    logger.error('Prompt analysis error', { error: String(error) });
     return getMockAnalysis(jobRole);
   }
 }

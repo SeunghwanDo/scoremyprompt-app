@@ -6,8 +6,16 @@
  * Returns: HTML file with analysis report (dark theme styled)
  */
 
+import { z } from 'zod';
 import { getSupabaseAdmin } from '@/app/lib/supabase';
 import { logger } from '@/app/lib/logger';
+import { unauthorizedResponse, forbiddenResponse, notFoundResponse, badRequestResponse, errorResponse } from '@/app/lib/errors';
+
+const ExportSchema = z.object({
+  analysisId: z.string().uuid('Invalid analysis ID'),
+  promptText: z.string().max(10000).optional(),
+  format: z.enum(['html', 'csv']).default('html'),
+});
 
 interface DimensionData {
   score: number;
@@ -44,21 +52,15 @@ const DEFAULT_DIM: DimensionData = { score: 0, maxScore: 0, feedback: 'N/A' };
 export async function POST(request: Request) {
   try {
     const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return Response.json(
-        { error: 'Unauthorized: Missing or invalid auth token' },
-        { status: 401 }
-      );
+    if (!authHeader?.startsWith('Bearer ')) {
+      return unauthorizedResponse('Missing or invalid auth token');
     }
 
     const token = authHeader.substring(7);
 
     const supabase = getSupabaseAdmin();
     if (!supabase) {
-      return Response.json(
-        { error: 'Database not configured' },
-        { status: 500 }
-      );
+      return errorResponse(new Error('Database not configured'));
     }
 
     const {
@@ -67,10 +69,7 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
-      return Response.json(
-        { error: 'Unauthorized: Invalid auth token' },
-        { status: 401 }
-      );
+      return unauthorizedResponse('Invalid auth token');
     }
 
     // Check user tier (must be Pro)
@@ -81,28 +80,20 @@ export async function POST(request: Request) {
       .single();
 
     if (profileError || !userProfile) {
-      return Response.json(
-        { error: 'User profile not found' },
-        { status: 404 }
-      );
+      return notFoundResponse('User profile not found');
     }
 
     if (userProfile.tier !== 'pro') {
-      return Response.json(
-        { error: 'Pro subscription required for exports' },
-        { status: 403 }
-      );
+      return forbiddenResponse('Pro subscription required for exports');
     }
 
-    // Parse request body — promptText is sent from client session for privacy
-    const { analysisId, promptText, format = 'html' } = await request.json();
-
-    if (!analysisId) {
-      return Response.json(
-        { error: 'analysisId is required' },
-        { status: 400 }
-      );
+    // Parse & validate request body
+    const body = await request.json();
+    const parsed = ExportSchema.safeParse(body);
+    if (!parsed.success) {
+      return badRequestResponse(parsed.error.issues[0].message);
     }
+    const { analysisId, promptText, format } = parsed.data;
 
     // Query analysis from Supabase
     const { data: analysis, error: analysisError } = await supabase
@@ -113,10 +104,7 @@ export async function POST(request: Request) {
       .single();
 
     if (analysisError || !analysis) {
-      return Response.json(
-        { error: 'Analysis not found' },
-        { status: 404 }
-      );
+      return notFoundResponse('Analysis not found');
     }
 
     // Use client-provided promptText, fall back to DB preview, or privacy message
@@ -146,10 +134,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     logger.error('Export error', { error: String(error) });
-    return Response.json(
-      { error: 'Failed to generate export. Please try again.' },
-      { status: 500 }
-    );
+    return errorResponse(error as Error);
   }
 }
 

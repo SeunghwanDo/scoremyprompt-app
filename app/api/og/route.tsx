@@ -2,6 +2,7 @@ import { ImageResponse } from '@vercel/og';
 import { z } from 'zod';
 import { GRADE_COLORS } from '@/app/constants';
 import type { Grade } from '@/app/types';
+import { logger } from '@/app/lib/logger';
 
 const GRADE_LABELS: Record<Grade, string> = {
   S: 'Exceptional',
@@ -67,7 +68,7 @@ export async function GET(request: Request) {
       { letter: 'R', label: 'Role', score: r },
       { letter: 'O', label: 'Output', score: o },
       { letter: 'M', label: 'Mission', score: m },
-      { letter: 'P', label: 'Structure', score: s },
+      { letter: 'S', label: 'Structure', score: s },
       { letter: 'T', label: 'Tailoring', score: t },
     ];
 
@@ -469,7 +470,7 @@ export async function GET(request: Request) {
       }
     );
   } catch (error) {
-    console.error('OG Image generation error:', error);
+    logger.error('OG Image generation error', { error: String(error) });
     return new Response('Failed to generate OG image', { status: 500 });
   }
 }

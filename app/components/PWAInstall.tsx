@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { trackPWAInstallPrompted, trackPWAInstalled } from '../lib/analytics';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -11,27 +11,57 @@ interface BeforeInstallPromptEvent extends Event {
 const SW_STORAGE_KEY = 'smp_pwa_dismissed';
 
 /**
- * PWAInstall — Registers the service worker and shows an install prompt banner.
- * Auto-hides if the user dismisses or installs.
+ * PWAInstall — Registers the service worker, shows an install prompt banner,
+ * and notifies users when a new SW version is ready.
  */
 export default function PWAInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showBanner, setShowBanner] = useState(false);
+  const [showUpdate, setShowUpdate] = useState(false);
+  const [waitingSW, setWaitingSW] = useState<ServiceWorker | null>(null);
 
-  // Register service worker
+  // Register service worker + detect updates
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch((err) => {
-        console.warn('SW registration failed:', err);
+    if (!('serviceWorker' in navigator)) return;
+
+    navigator.serviceWorker.register('/sw.js').then((registration) => {
+      // Check for waiting SW on load (e.g. user returns to tab)
+      if (registration.waiting) {
+        setWaitingSW(registration.waiting);
+        setShowUpdate(true);
+      }
+
+      // Detect new SW installing
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (!newWorker) return;
+
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // New version ready — show update banner
+            setWaitingSW(newWorker);
+            setShowUpdate(true);
+          }
+        });
       });
-    }
+    }).catch(() => {
+      // SW registration failed — non-critical
+    });
+
+    // Reload when new SW takes control
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
   }, []);
 
   // Capture beforeinstallprompt
   useEffect(() => {
     try {
       if (sessionStorage.getItem(SW_STORAGE_KEY)) return;
-    } catch {}
+    } catch { /* empty */ }
 
     const handler = (e: Event) => {
       e.preventDefault();
@@ -60,8 +90,48 @@ export default function PWAInstall() {
 
   const handleDismiss = () => {
     setShowBanner(false);
-    try { sessionStorage.setItem(SW_STORAGE_KEY, '1'); } catch {}
+    try { sessionStorage.setItem(SW_STORAGE_KEY, '1'); } catch { /* empty */ }
   };
+
+  const handleUpdate = useCallback(() => {
+    if (!waitingSW) return;
+    waitingSW.postMessage({ type: 'SKIP_WAITING' });
+    setShowUpdate(false);
+  }, [waitingSW]);
+
+  // Update banner — takes priority
+  if (showUpdate) {
+    return (
+      <div className="fixed bottom-20 sm:bottom-6 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm z-50 animate-slide-up">
+        <div className="bg-surface border border-primary/30 rounded-lg p-4 shadow-lg flex items-start gap-3">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-emerald-500 to-primary flex items-center justify-center flex-shrink-0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-white">Update Available</p>
+            <p className="text-xs text-gray-400 mt-0.5">A new version of ScoreMyPrompt is ready</p>
+            <button
+              onClick={handleUpdate}
+              className="text-xs font-semibold px-3 py-1.5 mt-3 bg-primary text-white rounded-md hover:opacity-90 transition-opacity"
+            >
+              Update now
+            </button>
+          </div>
+          <button
+            onClick={() => setShowUpdate(false)}
+            className="text-gray-500 hover:text-gray-300 flex-shrink-0"
+            aria-label="Close"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!showBanner) return null;
 
@@ -90,7 +160,7 @@ export default function PWAInstall() {
           </div>
         </div>
         <button onClick={handleDismiss} className="text-gray-500 hover:text-gray-300 flex-shrink-0" aria-label="Close">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
         </button>
       </div>
     </div>

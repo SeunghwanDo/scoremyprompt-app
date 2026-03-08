@@ -1,6 +1,16 @@
+import { z } from 'zod';
 import { getSupabaseAdmin } from '@/app/lib/supabase';
 import { logger } from '@/app/lib/logger';
+import { unauthorizedResponse } from '@/app/lib/errors';
 import type { Grade } from '@/app/types';
+
+const HistoryQuerySchema = z.object({
+  role: z.string().max(50).default('All'),
+  grade: z.string().max(5).default('All'),
+  sort: z.enum(['newest', 'oldest', 'highest', 'lowest']).default('newest'),
+  page: z.coerce.number().int().min(1).max(1000).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
 
 interface HistoryDimensionScore {
   score: number;
@@ -10,7 +20,7 @@ interface HistoryDimensionScore {
 interface HistoryAnalysis {
   id: string;
   date: string;
-  prompt: string;
+  promptPreview: string;
   score: number;
   grade: Grade;
   jobRole: string;
@@ -69,7 +79,7 @@ export async function GET(request: Request) {
     // ─── Auth ───
     const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return unauthorizedResponse();
     }
 
     const supabase = getSupabaseAdmin();
@@ -79,18 +89,21 @@ export async function GET(request: Request) {
 
     const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.substring(7));
     if (authError || !user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return unauthorizedResponse();
     }
 
     const userId = user.id;
 
-    // ─── Parse query params ───
+    // ─── Parse & validate query params ───
     const url = new URL(request.url);
-    const role = url.searchParams.get('role') || 'All';
-    const grade = url.searchParams.get('grade') || 'All';
-    const sort = (url.searchParams.get('sort') || 'newest') as SortOption;
-    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1'));
-    const limit = Math.min(50, Math.max(1, parseInt(url.searchParams.get('limit') || '20')));
+    const queryParams = HistoryQuerySchema.parse({
+      role: url.searchParams.get('role') ?? undefined,
+      grade: url.searchParams.get('grade') ?? undefined,
+      sort: url.searchParams.get('sort') ?? undefined,
+      page: url.searchParams.get('page') ?? undefined,
+      limit: url.searchParams.get('limit') ?? undefined,
+    });
+    const { role, grade, sort, page, limit } = queryParams;
 
     const offset = (page - 1) * limit;
     const { column, ascending } = getSortConfig(sort);
@@ -115,7 +128,7 @@ export async function GET(request: Request) {
     // ─── Data query ───
     let dataQuery = supabase
       .from('analyses')
-      .select('id, created_at, prompt_text, overall_score, grade, job_role, result_json')
+      .select('id, created_at, overall_score, grade, job_role, result_json')
       .eq('user_id', userId)
       .order(column, { ascending })
       .range(offset, offset + limit - 1);
@@ -133,7 +146,7 @@ export async function GET(request: Request) {
     const analyses: HistoryAnalysis[] = (data || []).map((row) => ({
       id: row.id,
       date: new Date(row.created_at).toISOString().split('T')[0],
-      prompt: row.prompt_text || '',
+      promptPreview: `${row.job_role || 'General'} prompt — scored ${row.overall_score || 0}/100`,
       score: row.overall_score || 0,
       grade: (row.grade as Grade) || 'D',
       jobRole: row.job_role || 'Other',

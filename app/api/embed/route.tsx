@@ -1,4 +1,11 @@
 import { NextRequest } from 'next/server';
+import { z } from 'zod';
+
+const EmbedParamsSchema = z.object({
+  score: z.coerce.number().int().min(0).max(100).default(0),
+  grade: z.string().max(5).default('B'),
+  gradeLabel: z.string().max(50).optional(),
+});
 
 const GRADE_COLORS: Record<string, string> = {
   S: '#10B981',
@@ -10,9 +17,14 @@ const GRADE_COLORS: Record<string, string> = {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const score = Math.min(100, Math.max(0, parseInt(searchParams.get('score') || '0', 10)));
-  const grade = searchParams.get('grade') || 'B';
-  const gradeLabel = searchParams.get('gradeLabel') || `${grade}-Tier`;
+  const params = EmbedParamsSchema.parse({
+    score: searchParams.get('score') ?? undefined,
+    grade: searchParams.get('grade') ?? undefined,
+    gradeLabel: searchParams.get('gradeLabel') || undefined,
+  });
+  const score = params.score;
+  const grade = params.grade;
+  const gradeLabel = params.gradeLabel || `${grade}-Tier`;
   const gradeColor = GRADE_COLORS[grade] || GRADE_COLORS.B;
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://scoremyprompt.com';
