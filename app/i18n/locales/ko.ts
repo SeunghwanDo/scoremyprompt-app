@@ -1,7 +1,6 @@
 /**
  * Korean locale — 한국어 번역 파일.
  * Structure must match en.ts exactly.
- * TODO: Complete all translations before enabling Korean locale.
  */
 import type { Locale } from './en';
 
@@ -135,6 +134,77 @@ const ko: Locale = {
     joinTitle: '커뮤니티에 참여하세요',
     joinSubtitle: '수천 명의 프롬프트 엔지니어와 연결하세요. 템플릿 공유, 베스트 프랙티스 학습, 최신 소식을 받아보세요.',
     follow: '@ScoreMyPrompt 팔로우',
+  },
+
+  // ─── Compare Page ─────────────────────────────────
+  compare: {
+    title: '프롬프트 비교',
+    subtitle: '두 프롬프트를 나란히 분석하여 어떤 것이 더 높은 점수를 받는지 확인하세요.',
+    promptA: '프롬프트 A',
+    promptB: '프롬프트 B',
+    compareButton: '비교하기',
+    winner: '승자',
+    tie: '무승부!',
+    jobRoleLabel: '직무',
+  },
+
+  // ─── Bulk Analysis ────────────────────────────────
+  bulk: {
+    title: '대량 프롬프트 분석',
+    subtitle: '여러 프롬프트를 한 번에 분석하세요. Pro 기능입니다.',
+    addPrompt: '프롬프트 추가',
+    analyzeAll: '전체 분석',
+    promptCount: '{count}개 프롬프트',
+    proRequired: '대량 분석을 사용하려면 Pro 구독이 필요합니다.',
+  },
+
+  // ─── Pricing Page ─────────────────────────────────
+  pricing: {
+    title: '심플하고 투명한 요금제',
+    subtitle: '무료로 시작하세요. 더 필요할 때 업그레이드하세요.',
+    free: '무료',
+    pro: 'Pro',
+    enterprise: 'Enterprise',
+    perMonth: '/월',
+    startTrial: '무료 체험 시작',
+    currentPlan: '현재 플랜',
+    faq: '자주 묻는 질문',
+  },
+
+  // ─── Challenge Page ───────────────────────────────
+  challenge: {
+    title: '프롬프트 챌린지',
+    subtitle: '이 점수를 이길 수 있나요?',
+    acceptChallenge: '챌린지 수락',
+    yourTurn: '당신 차례',
+    beatScore: '{score}점을 넘어보세요!',
+  },
+
+  // ─── Quality Indicator ────────────────────────────
+  quality: {
+    weak: '기본',
+    moderate: '양호',
+    strong: '상세',
+    tipContext: '컨텍스트 또는 역할을 추가하세요',
+    tipOutput: '출력 형식을 지정하세요',
+    tipDetail: '더 자세히 작성하세요 (100자 이상)',
+    tipObjective: '명확한 목표를 명시하세요',
+  },
+
+  // ─── Rate Limit ───────────────────────────────────
+  rateLimit: {
+    remaining: '오늘 {count}회 남음',
+    waitMessage: '{seconds}초 대기 중...',
+    countdown: '{time} 후 다시 시도',
+  },
+
+  // ─── Footer ───────────────────────────────────────
+  footer: {
+    privacy: '개인정보처리방침',
+    terms: '이용약관',
+    pricing: '요금제',
+    guides: '가이드',
+    copyright: '© {year} ScoreMyPrompt. All rights reserved.',
   },
 } as const;
 

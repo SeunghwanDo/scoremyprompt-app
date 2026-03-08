@@ -148,6 +148,77 @@ const en = {
     joinSubtitle: 'Connect with thousands of prompt engineers. Share templates, learn best practices, and stay updated.',
     follow: 'Follow @ScoreMyPrompt',
   },
+
+  // ─── Compare Page ─────────────────────────────────
+  compare: {
+    title: 'Compare Prompts',
+    subtitle: 'Analyze two prompts side-by-side and see which one scores higher.',
+    promptA: 'Prompt A',
+    promptB: 'Prompt B',
+    compareButton: 'Compare Now',
+    winner: 'Winner',
+    tie: "It's a tie!",
+    jobRoleLabel: 'Job Role',
+  },
+
+  // ─── Bulk Analysis ────────────────────────────────
+  bulk: {
+    title: 'Bulk Prompt Analysis',
+    subtitle: 'Analyze multiple prompts at once. Pro feature.',
+    addPrompt: 'Add Prompt',
+    analyzeAll: 'Analyze All',
+    promptCount: '{count} prompts',
+    proRequired: 'Pro subscription required for bulk analysis.',
+  },
+
+  // ─── Pricing Page ─────────────────────────────────
+  pricing: {
+    title: 'Simple, Transparent Pricing',
+    subtitle: 'Start free. Upgrade when you need more.',
+    free: 'Free',
+    pro: 'Pro',
+    enterprise: 'Enterprise',
+    perMonth: '/month',
+    startTrial: 'Start Free Trial',
+    currentPlan: 'Current Plan',
+    faq: 'Frequently Asked Questions',
+  },
+
+  // ─── Challenge Page ───────────────────────────────
+  challenge: {
+    title: 'Prompt Challenge',
+    subtitle: 'Can you beat this score?',
+    acceptChallenge: 'Accept Challenge',
+    yourTurn: 'Your Turn',
+    beatScore: 'Try to beat {score} points!',
+  },
+
+  // ─── Quality Indicator ────────────────────────────
+  quality: {
+    weak: 'Basic',
+    moderate: 'Good',
+    strong: 'Detailed',
+    tipContext: 'Add context or role',
+    tipOutput: 'Specify output format',
+    tipDetail: 'Add more detail (100+ chars)',
+    tipObjective: 'State a clear objective',
+  },
+
+  // ─── Rate Limit ───────────────────────────────────
+  rateLimit: {
+    remaining: '{count} left today',
+    waitMessage: 'Please wait {seconds}s...',
+    countdown: 'Try again in {time}',
+  },
+
+  // ─── Footer ───────────────────────────────────────
+  footer: {
+    privacy: 'Privacy',
+    terms: 'Terms',
+    pricing: 'Pricing',
+    guides: 'Guides',
+    copyright: '© {year} ScoreMyPrompt. All rights reserved.',
+  },
 } as const;
 
 export type Locale = typeof en;

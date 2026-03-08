@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { Grade, AnalysisResult, DimensionScore, DimensionScores, DimensionMeta, JobRole } from '@/app/types';
 import Footer from '../components/Footer';
+import PromptQualityIndicator from '../components/PromptQualityIndicator';
 
 type DimensionKey = keyof DimensionScores;
 
@@ -216,7 +217,7 @@ export default function ComparePage() {
               <button
                 key={role}
                 onClick={() => setJobRole(role)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 text-sm ${
+                className={`px-4 py-2.5 min-h-[44px] rounded-lg font-medium transition-all duration-200 text-sm ${
                   jobRole === role
                     ? 'bg-primary text-white'
                     : 'bg-dark border border-border text-gray-400 hover:border-primary'
@@ -232,48 +233,58 @@ export default function ComparePage() {
         <div className="grid sm:grid-cols-2 gap-6 mb-8">
           {/* Prompt 1 */}
           <div className="card">
-            <label className="block text-sm font-medium text-gray-300 mb-3">
+            <label htmlFor="prompt1" className="block text-sm font-medium text-gray-300 mb-3">
               Prompt 1
             </label>
             <textarea
+              id="prompt1"
               value={prompt1}
               onChange={(e) => {
                 setPrompt1(e.target.value);
                 setError('');
               }}
               placeholder="Paste your first prompt here..."
-              className="input-field min-h-40 resize-none"
+              className="input-field min-h-40 sm:min-h-40 min-h-32 resize-none"
               maxLength={5000}
+              aria-describedby="prompt1-count"
             />
-            <p className={`text-xs mt-2 ${prompt1.length > 4500 ? 'text-amber-400' : 'text-gray-400'}`}>
-              {prompt1.length} / 5,000
-            </p>
+            <div className="flex items-center justify-between mt-2">
+              <PromptQualityIndicator prompt={prompt1} />
+              <p id="prompt1-count" className={`text-xs flex-shrink-0 ${prompt1.length > 4500 ? 'text-amber-400' : 'text-gray-400'}`}>
+                {prompt1.length} / 5,000
+              </p>
+            </div>
           </div>
 
           {/* Prompt 2 */}
           <div className="card">
-            <label className="block text-sm font-medium text-gray-300 mb-3">
+            <label htmlFor="prompt2" className="block text-sm font-medium text-gray-300 mb-3">
               Prompt 2
             </label>
             <textarea
+              id="prompt2"
               value={prompt2}
               onChange={(e) => {
                 setPrompt2(e.target.value);
                 setError('');
               }}
               placeholder="Paste your second prompt here..."
-              className="input-field min-h-40 resize-none"
+              className="input-field min-h-40 sm:min-h-40 min-h-32 resize-none"
               maxLength={5000}
+              aria-describedby="prompt2-count"
             />
-            <p className={`text-xs mt-2 ${prompt2.length > 4500 ? 'text-amber-400' : 'text-gray-400'}`}>
-              {prompt2.length} / 5,000
-            </p>
+            <div className="flex items-center justify-between mt-2">
+              <PromptQualityIndicator prompt={prompt2} />
+              <p id="prompt2-count" className={`text-xs flex-shrink-0 ${prompt2.length > 4500 ? 'text-amber-400' : 'text-gray-400'}`}>
+                {prompt2.length} / 5,000
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-3 bg-red-900/20 border border-red-800 rounded-lg text-red-300 text-sm">
+          <div className="mb-6 p-3 bg-red-900/20 border border-red-800 rounded-lg text-red-300 text-sm" role="alert">
             {error}
           </div>
         )}
@@ -282,8 +293,8 @@ export default function ComparePage() {
         <div className="text-center mb-12">
           <button
             onClick={handleCompare}
-            disabled={loading}
-            className="btn-primary font-semibold text-lg px-12 py-4"
+            disabled={loading || (!prompt1.trim() && !prompt2.trim())}
+            className="btn-primary font-semibold text-lg px-12 py-4 w-full sm:w-auto min-h-[48px]"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
