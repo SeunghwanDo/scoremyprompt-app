@@ -299,7 +299,7 @@ export async function GET(request: Request) {
                     color: '#8b5cf6',
                   }}
                 >
-                  scoremyprompt.com
+                  scoremyprompt.app
                 </span>
               </div>
             </div>
@@ -445,7 +445,7 @@ export async function GET(request: Request) {
                   display: 'flex',
                 }}
               >
-                {"What's YOUR score? → scoremyprompt.com"}
+                {"What's YOUR score? → scoremyprompt.app"}
               </div>
 
               {/* Subtle branding bottom-right */}

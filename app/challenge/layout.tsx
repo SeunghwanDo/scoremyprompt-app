@@ -4,11 +4,11 @@ export const metadata: Metadata = {
   title: 'Prompt Challenge — ScoreMyPrompt',
   description:
     'Test your prompt engineering skills with timed challenges. Can you beat the target score? Compete and improve your AI prompts.',
-  alternates: { canonical: 'https://scoremyprompt.com/challenge' },
+  alternates: { canonical: 'https://scoremyprompt.app/challenge' },
   openGraph: {
     title: 'Prompt Challenge — ScoreMyPrompt',
     description: 'Timed prompt engineering challenges. Beat the target score and prove your skills.',
-    url: 'https://scoremyprompt.com/challenge',
+    url: 'https://scoremyprompt.app/challenge',
   },
 };
 

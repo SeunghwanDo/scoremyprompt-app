@@ -38,7 +38,7 @@ export function buildArticleSchema(params: {
     publisher: {
       '@type': 'Organization',
       name: 'ScoreMyPrompt',
-      url: 'https://scoremyprompt.com',
+      url: 'https://scoremyprompt.app',
     },
     mainEntityOfPage: { '@type': 'WebPage', '@id': params.url },
   };

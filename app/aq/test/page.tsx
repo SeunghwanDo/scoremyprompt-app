@@ -26,7 +26,10 @@ function shuffle<T>(arr: T[]): T[] {
 // 옵션 위치를 셔플하고 correctIndex를 새 위치로 갱신.
 // 데이터 풀이 모두 correctIndex=0이라 "1번 치중" + "정답이 항상 길다" 패턴이 학습되는 걸 방지.
 function shuffleQuestionOptions(q: AQQuestion): AQQuestion {
-  if (!q.options || q.options.length === 0) return q;
+  // correctIndex is optional on the type (prompt-phase questions have none);
+  // every bank question sets it. Guard so tsc passes and a malformed question
+  // is left unshuffled instead of scrambled with a lost answer.
+  if (!q.options || q.options.length === 0 || q.correctIndex == null) return q;
   const correctOption = q.options[q.correctIndex];
   const shuffledOptions = shuffle(q.options);
   const newCorrectIndex = shuffledOptions.indexOf(correctOption);

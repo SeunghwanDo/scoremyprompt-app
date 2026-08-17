@@ -131,7 +131,7 @@ export default function ShareCard({ score, grade, gradeLabel, jobRole, percentil
     ctx.textAlign = 'right';
     ctx.fillStyle = '#64748b';
     ctx.font = '18px Inter, -apple-system, sans-serif';
-    ctx.fillText('scoremyprompt.com', W - 40, H - 30);
+    ctx.fillText('scoremyprompt.app', W - 40, H - 30);
 
     // Trigger download
     const link = document.createElement('a');

@@ -15,18 +15,18 @@ export const metadata: Metadata = {
   keywords: 'AI prompt grader, score my prompt, prompt engineering, prompt analysis, PROMPT score, ChatGPT prompt, Claude prompt, AI writing, prompt optimization, free prompt tool',
   authors: [{ name: 'ScoreMyPrompt' }],
   alternates: {
-    canonical: 'https://scoremyprompt.com',
+    canonical: 'https://scoremyprompt.app',
     languages: {
-      en: 'https://scoremyprompt.com',
-      ko: 'https://scoremyprompt.com?lang=ko',
-      ja: 'https://scoremyprompt.com?lang=ja',
-      'zh-CN': 'https://scoremyprompt.com?lang=zh-CN',
-      'zh-TW': 'https://scoremyprompt.com?lang=zh-TW',
-      es: 'https://scoremyprompt.com?lang=es',
-      fr: 'https://scoremyprompt.com?lang=fr',
-      de: 'https://scoremyprompt.com?lang=de',
-      pt: 'https://scoremyprompt.com?lang=pt',
-      hi: 'https://scoremyprompt.com?lang=hi',
+      en: 'https://scoremyprompt.app',
+      ko: 'https://scoremyprompt.app?lang=ko',
+      ja: 'https://scoremyprompt.app?lang=ja',
+      'zh-CN': 'https://scoremyprompt.app?lang=zh-CN',
+      'zh-TW': 'https://scoremyprompt.app?lang=zh-TW',
+      es: 'https://scoremyprompt.app?lang=es',
+      fr: 'https://scoremyprompt.app?lang=fr',
+      de: 'https://scoremyprompt.app?lang=de',
+      pt: 'https://scoremyprompt.app?lang=pt',
+      hi: 'https://scoremyprompt.app?lang=hi',
     },
   },
   robots: {
@@ -43,12 +43,12 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'ScoreMyPrompt — Grade Your AI Prompt in 30 Seconds',
     description: 'Get your PROMPT Score and see how you compare with professionals in your field.',
-    url: 'https://scoremyprompt.com',
+    url: 'https://scoremyprompt.app',
     siteName: 'ScoreMyPrompt',
     type: 'website',
     images: [
       {
-        url: 'https://scoremyprompt.com/api/og?score=92&grade=S&gradeLabel=Exceptional&jobRole=Marketing&percentile=98&p=95&r=90&o=88&m=93&s=91&t=94',
+        url: 'https://scoremyprompt.app/api/og?score=92&grade=S&gradeLabel=Exceptional&jobRole=Marketing&percentile=98&p=95&r=90&o=88&m=93&s=91&t=94',
         width: 1200,
         height: 630,
         alt: 'ScoreMyPrompt - AI Prompt Grading Tool',
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     title: 'ScoreMyPrompt — Grade Your AI Prompt in 30 Seconds',
     description: 'Get your PROMPT Score and see how you compare with professionals in your field.',
     creator: '@scoremyprompt',
-    images: ['https://scoremyprompt.com/api/og?score=92&grade=S&gradeLabel=Exceptional&jobRole=Marketing&percentile=98&p=95&r=90&o=88&m=93&s=91&t=94'],
+    images: ['https://scoremyprompt.app/api/og?score=92&grade=S&gradeLabel=Exceptional&jobRole=Marketing&percentile=98&p=95&r=90&o=88&m=93&s=91&t=94'],
   },
 };
 
@@ -84,8 +84,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 {
                   '@type': 'Organization',
                   name: 'ScoreMyPrompt',
-                  url: 'https://scoremyprompt.com',
-                  logo: 'https://scoremyprompt.com/favicon.svg',
+                  url: 'https://scoremyprompt.app',
+                  logo: 'https://scoremyprompt.app/favicon.svg',
                   sameAs: [
                     'https://x.com/scoremyprompt',
                     'https://linkedin.com/company/scoremyprompt',
@@ -96,23 +96,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 {
                   '@type': 'WebApplication',
                   name: 'ScoreMyPrompt',
-                  url: 'https://scoremyprompt.com',
+                  url: 'https://scoremyprompt.app',
                   description: 'Free AI prompt grading tool. Get your PROMPT Score across 6 dimensions and compare with professionals.',
                   applicationCategory: 'ProductivityApplication',
                   operatingSystem: 'Web',
                   offers: [
                     { '@type': 'Offer', price: '0', priceCurrency: 'USD', name: 'Free' },
-                    { '@type': 'Offer', price: '9.99', priceCurrency: 'USD', name: 'Pro', billingIncrement: 'P1M' },
+                    { '@type': 'Offer', price: '4.99', priceCurrency: 'USD', name: 'Pro', billingIncrement: 'P1M' },
                   ],
                   // aggregateRating: Real user review data will be added post-launch
                 },
                 {
                   '@type': 'BreadcrumbList',
                   itemListElement: [
-                    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://scoremyprompt.com' },
-                    { '@type': 'ListItem', position: 2, name: 'Templates', item: 'https://scoremyprompt.com/templates' },
-                    { '@type': 'ListItem', position: 3, name: 'Guides', item: 'https://scoremyprompt.com/guides' },
-                    { '@type': 'ListItem', position: 4, name: 'Pricing', item: 'https://scoremyprompt.com/pricing' },
+                    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://scoremyprompt.app' },
+                    { '@type': 'ListItem', position: 2, name: 'Templates', item: 'https://scoremyprompt.app/templates' },
+                    { '@type': 'ListItem', position: 3, name: 'Guides', item: 'https://scoremyprompt.app/guides' },
+                    { '@type': 'ListItem', position: 4, name: 'Pricing', item: 'https://scoremyprompt.app/pricing' },
                   ],
                 },
                 {

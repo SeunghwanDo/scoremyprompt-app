@@ -7,7 +7,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 const WATERMARK_README =
-  '\n\n---\n\nCreated with ScoreMyPrompt — Upgrade to Pro for unlimited builds: https://scoremyprompt.com/pricing\n';
+  '\n\n---\n\nCreated with ScoreMyPrompt — Upgrade to Pro for unlimited builds: https://scoremyprompt.app/pricing\n';
 
 interface BuildRow {
   files: BuilderFileMap;

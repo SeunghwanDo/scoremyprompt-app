@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://scoremyprompt.com';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://scoremyprompt.app';
 
   return {
     title: `${guide.title} | ScoreMyPrompt`,
@@ -93,7 +93,7 @@ export default async function GuideDetail({ params }: PageProps) {
     );
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://scoremyprompt.com';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://scoremyprompt.app';
 
   // Use relatedSlugs for relevance-based related guides, fallback to first 3 others
   const relatedGuides = guide.relatedSlugs
@@ -106,7 +106,7 @@ export default async function GuideDetail({ params }: PageProps) {
   const articleSchema = buildArticleSchema({
     headline: guide.title,
     description: guide.description,
-    url: `https://scoremyprompt.com/guides/${guide.slug}`,
+    url: `https://scoremyprompt.app/guides/${guide.slug}`,
     datePublished: '2026-04-16',
   });
   const softwareSchema = buildSoftwareApplicationSchema();
@@ -300,19 +300,19 @@ export default async function GuideDetail({ params }: PageProps) {
             '@type': 'Article',
             headline: guide.title,
             description: guide.description,
-            image: 'https://scoremyprompt.com/og-image.png',
+            image: 'https://scoremyprompt.app/og-image.png',
             datePublished: new Date().toISOString().split('T')[0],
             author: {
               '@type': 'Organization',
               name: 'ScoreMyPrompt',
-              url: 'https://scoremyprompt.com',
+              url: 'https://scoremyprompt.app',
             },
             publisher: {
               '@type': 'Organization',
               name: 'ScoreMyPrompt',
               logo: {
                 '@type': 'ImageObject',
-                url: 'https://scoremyprompt.com/favicon.svg',
+                url: 'https://scoremyprompt.app/favicon.svg',
               },
             },
             articleBody: guide.sections.map((s) => s.content.join(' ')).join(' '),

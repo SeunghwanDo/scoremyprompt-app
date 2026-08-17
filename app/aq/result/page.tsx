@@ -155,7 +155,10 @@ export default function AQResultPage() {
           </h2>
           <p className="text-gray-400 mb-2 max-w-md mx-auto leading-relaxed">{gradeConfig.description}</p>
           <p className="text-sm text-gray-500">
-            상위 {result.percentile}% · 소요 {minutes}분 {seconds}초
+            <span title="응시자 실측 분포가 아니라 표준 분포(평균 100·표준편차 30) 기준 추정치입니다. 응시 데이터가 쌓이면 실측 분위로 바뀝니다.">
+              추정 상위 {result.percentile}%
+            </span>
+            {' '}· 소요 {minutes}분 {seconds}초
           </p>
         </div>
 

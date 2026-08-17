@@ -15,7 +15,7 @@ const LAST_UPDATED = {
  * Uses fixed dates per section to avoid signaling false freshness.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://scoremyprompt.com';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://scoremyprompt.app';
   const core = LAST_UPDATED.core;
   const legal = LAST_UPDATED.legal;
 

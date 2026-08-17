@@ -42,5 +42,17 @@ export const metadata: Metadata = {
 };
 
 export default function AQLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <>
+      {/*
+        AQ pages render their own <nav>. The global ScoreMyPrompt header
+        (fixed, z-40, injected by ClientProviders) was overlapping it and its
+        links (/guides, /pricing, …) 404'd on aq.ai.kr. Hide it here — CSS is
+        safe for SSR/hydration and keeps the pages statically renderable
+        (reading headers() in a layout would make the whole tree dynamic).
+      */}
+      <style>{`[data-global-header]{display:none}`}</style>
+      {children}
+    </>
+  );
 }

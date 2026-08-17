@@ -91,7 +91,7 @@ export default function ResultPage() {
   }, []);
 
   // --- Handlers ---
-  const shareUrl = typeof window !== 'undefined' ? window.location.origin : 'https://scoremyprompt.com';
+  const shareUrl = typeof window !== 'undefined' ? window.location.origin : 'https://scoremyprompt.app';
 
   const handleNewAnalysis = () => {
     sessionStorage.removeItem('promptResult');

@@ -79,8 +79,8 @@ export default function SecurityPolicyPage() {
             </p>
             <ul className="space-y-1.5">
               {[
-                'scoremyprompt.com and all subdomains',
-                'API endpoints at scoremyprompt.com/api/*',
+                'scoremyprompt.app and all subdomains',
+                'API endpoints at scoremyprompt.app/api/*',
                 'Authentication and authorization flows',
                 'Data storage and processing',
               ].map((item, i) => (

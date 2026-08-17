@@ -125,6 +125,12 @@ export const AQ_CERTIFICATE_MIN_SCORE = 110; // B등급 이상부터 인증서 �
 export const AQ_MAX_SCORE = 200;
 
 // ─── 백분위 추정 (초기 데이터 없을 때 정규분포 기반) ──
+//
+// 이 값은 실제 응시자 분포가 아니라 평균 100·표준편차 30 가정의 근사치다.
+// UI 는 반드시 "추정 상위 N%" 로 표기한다 (result / certificate / share).
+// 전환 경로: aq_certificates(마이그레이션 008)에 점수가 쌓이면 서버에서
+// percentile_cont 로 실측 분위를 계산하는 GET /api/aq/percentile?score= 를 두고
+// 이 함수를 폴백으로만 남긴다. 그때 UI 라벨을 "상위 N% (응시자 M명 기준)" 로 바꾼다.
 export function estimatePercentile(score: number): number {
   // 평균 100, 표준편차 30 가정
   const mean = 100;

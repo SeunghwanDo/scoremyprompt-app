@@ -9,40 +9,84 @@ import { trackAqCertificateGenerated, trackAqShareClicked } from '../../lib/anal
 
 const Footer = dynamic(() => import('../../components/Footer'), { ssr: false });
 
-function generateVerificationCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let code = '';
-  for (let i = 0; i < 8; i++) {
-    if (i === 4) code += '-';
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return code;
-}
+// Verification codes are issued server-side (POST /api/aq/certificate) and
+// resolvable at aq.ai.kr/cert/{code}. The previous Math.random client code was
+// never stored anywhere, so the "verify with this code" promise on the card was
+// empty. Cache the issued code in sessionStorage so a refresh doesn't re-issue.
+const CERT_CODE_KEY = 'aqCertCode';
 
 export default function AQCertificatePage() {
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [result, setResult] = useState<AQResult | null>(null);
-  const [verificationCode] = useState(generateVerificationCode);
+  const [verificationCode, setVerificationCode] = useState<string | null>(null);
+  const [issueError, setIssueError] = useState<string | null>(null);
   const [downloaded, setDownloaded] = useState(false);
 
   useEffect(() => {
     const data = sessionStorage.getItem('aqResult');
-    if (data) {
-      const parsed = JSON.parse(data) as AQResult;
-      if (parsed.totalScore >= AQ_CERTIFICATE_MIN_SCORE) {
-        setResult(parsed);
-        trackAqCertificateGenerated(parsed.totalScore, parsed.grade);
-      } else {
-        router.push('/aq/result');
-      }
-    } else {
+    if (!data) {
       router.push('/aq');
+      return;
     }
+    const parsed = JSON.parse(data) as AQResult;
+    if (parsed.totalScore < AQ_CERTIFICATE_MIN_SCORE) {
+      router.push('/aq/result');
+      return;
+    }
+    setResult(parsed);
+    trackAqCertificateGenerated(parsed.totalScore, parsed.grade);
+
+    // Reuse a code already issued for this exact result in this session
+    const cached = sessionStorage.getItem(CERT_CODE_KEY);
+    if (cached) {
+      try {
+        const { code, testedAt } = JSON.parse(cached) as { code: string; testedAt: string };
+        if (testedAt === parsed.testedAt && code) {
+          setVerificationCode(code);
+          return;
+        }
+      } catch { /* fall through and re-issue */ }
+    }
+
+    let cancelled = false;
+    fetch('/api/aq/certificate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        totalScore: parsed.totalScore,
+        grade: parsed.grade,
+        percentile: parsed.percentile,
+        domains: parsed.domains.map((d) => ({
+          domain: d.domain,
+          rawScore: d.rawScore,
+          weightedScore: d.weightedScore,
+          grade: d.grade,
+        })),
+        durationSeconds: parsed.durationSeconds,
+        testedAt: parsed.testedAt,
+      }),
+    })
+      .then(async (res) => {
+        const json = (await res.json().catch(() => ({}))) as { code?: string; error?: string; message?: string };
+        if (!res.ok || !json.code) throw new Error(json.message || json.error || `HTTP ${res.status}`);
+        return json.code;
+      })
+      .then((code) => {
+        if (cancelled) return;
+        sessionStorage.setItem(CERT_CODE_KEY, JSON.stringify({ code, testedAt: parsed.testedAt }));
+        setVerificationCode(code);
+      })
+      .catch((err: Error) => {
+        if (cancelled) return;
+        setIssueError(err.message);
+      });
+    return () => { cancelled = true; };
   }, [router]);
 
   const drawCertificate = useCallback(() => {
-    if (!result || !canvasRef.current) return;
+    // Wait for the server-issued code — never draw a card with a placeholder code
+    if (!result || !canvasRef.current || !verificationCode) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -152,9 +196,11 @@ export default function AQCertificatePage() {
     ctx.fillStyle = SEPIA;
     ctx.fillText(`— ${gradeConfig.title} —`, leftCenterX, midY + 150);
 
+    // 백분위는 인쇄하지 않는다 — 현재 값은 정규분포 추정치라 영구 문서(이력서 첨부)에
+    // 박으면 실측 분위로 바뀐 뒤 거짓이 된다. 점수·등급(사실)만 남긴다.
     ctx.fillStyle = INK_SOFT;
     ctx.font = `13px ${SERIF}`;
-    ctx.fillText(`상위 ${result.percentile}%`, leftCenterX, midY + 178);
+    ctx.fillText(`Total ${result.totalScore} / ${AQ_MAX_SCORE}`, leftCenterX, midY + 178);
     ctx.restore();
 
     // 중앙 수직 분리선
@@ -218,7 +264,7 @@ export default function AQCertificatePage() {
     ctx.fillStyle = INK_SOFT;
     ctx.font = `11px ${SERIF}`;
     ctx.textAlign = 'center';
-    ctx.fillText('AQ.AI.KR  ·  Powered by ScoreMyPrompt 6-Dimension Engine', W / 2, H - 78);
+    ctx.fillText(`Verify at aq.ai.kr/cert/${verificationCode}  ·  Powered by ScoreMyPrompt 6-Dimension Engine`, W / 2, H - 78);
     ctx.fillStyle = GOLD_DEEP;
     ctx.font = `italic 11px ${SERIF}`;
     ctx.fillText('IQ는 고정형, AQ는 성장형. 측정 시점 기준 인증입니다.', W / 2, H - 60);
@@ -274,7 +320,7 @@ export default function AQCertificatePage() {
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-white mb-2">인증서가 발급되었습니다</h2>
           <p className="text-gray-400">
-            {gradeConfig.label}등급 · {result.totalScore}/{AQ_MAX_SCORE} · 상위 {result.percentile}%
+            {gradeConfig.label}등급 · {result.totalScore}/{AQ_MAX_SCORE} · 추정 상위 {result.percentile}%
           </p>
         </div>
 
@@ -290,17 +336,38 @@ export default function AQCertificatePage() {
         {/* Verification Code */}
         <div className="card text-center py-4 mb-8">
           <p className="text-gray-500 text-xs mb-1">인증 코드</p>
-          <p className="text-white font-mono text-lg font-bold tracking-wider">{verificationCode}</p>
-          <p className="text-gray-500 text-xs mt-1">인증서 진위는 이 코드로 확인할 수 있습니다.</p>
+          {verificationCode ? (
+            <>
+              <p className="text-white font-mono text-lg font-bold tracking-wider">{verificationCode}</p>
+              <p className="text-gray-500 text-xs mt-1">
+                누구나{' '}
+                <a
+                  href={`/aq/cert/${verificationCode}`}
+                  className="text-purple-300 hover:text-purple-200 underline underline-offset-2"
+                >
+                  aq.ai.kr/cert/{verificationCode}
+                </a>
+                {' '}에서 이 인증서의 진위를 확인할 수 있습니다.
+              </p>
+            </>
+          ) : issueError ? (
+            <>
+              <p className="text-red-300 text-sm">인증 코드 발급에 실패했습니다.</p>
+              <p className="text-gray-500 text-xs mt-1">{issueError} — 잠시 후 새로고침해 주세요.</p>
+            </>
+          ) : (
+            <p className="text-gray-400 text-sm animate-pulse">인증 코드를 발급하는 중…</p>
+          )}
         </div>
 
         {/* Actions */}
         <div className="grid sm:grid-cols-3 gap-3">
           <button
             onClick={handleDownload}
-            className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-3 rounded-xl transition-all"
+            disabled={!verificationCode}
+            className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {downloaded ? '✓ 다운로드 완료' : '📥 이미지 다운로드'}
+            {downloaded ? '✓ 다운로드 완료' : verificationCode ? '📥 이미지 다운로드' : '⏳ 코드 발급 중…'}
           </button>
           <button
             onClick={handleShareLinkedIn}
@@ -310,7 +377,7 @@ export default function AQCertificatePage() {
           </button>
           <button
             onClick={() => {
-              const text = `AQ ${result.totalScore}/${AQ_MAX_SCORE} · ${gradeConfig.label}등급 (${gradeConfig.title})\n인증 코드: ${verificationCode}\nhttps://aq.ai.kr`;
+              const text = `AQ ${result.totalScore}/${AQ_MAX_SCORE} · ${gradeConfig.label}등급 (${gradeConfig.title})\n인증 코드: ${verificationCode ?? '(발급 중)'}\n${verificationCode ? `https://aq.ai.kr/cert/${verificationCode}` : 'https://aq.ai.kr'}`;
               navigator.clipboard.writeText(text);
               trackAqShareClicked('clipboard');
             }}

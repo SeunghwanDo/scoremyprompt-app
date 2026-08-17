@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   const gradeLabel = params.gradeLabel || `${grade}-Tier`;
   const gradeColor = GRADE_COLORS[grade] || GRADE_COLORS.B;
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://scoremyprompt.com';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://scoremyprompt.app';
 
   const html = `<!DOCTYPE html>
 <html>
@@ -52,7 +52,7 @@ body{background:#0f172a;font-family:system-ui,-apple-system,sans-serif;display:f
   <div class="info">
     <span class="grade">${gradeLabel}</span>
     <span class="label">PROMPT Score</span>
-    <span class="brand">scoremyprompt.com</span>
+    <span class="brand">scoremyprompt.app</span>
   </div>
 </a>
 </body>

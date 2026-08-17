@@ -50,7 +50,7 @@ export async function GET(req: Request): Promise<Response> {
         <div style={{ fontSize: 32, opacity: 0.9 }}>HARNES Score</div>
         <div style={{ fontSize: 220, fontWeight: 900, lineHeight: 1 }}>{total}</div>
         <div style={{ fontSize: 48, fontWeight: 700 }}>{tier}</div>
-        <div style={{ fontSize: 28, marginTop: 16, opacity: 0.9 }}>scoremyprompt.com/harness</div>
+        <div style={{ fontSize: 28, marginTop: 16, opacity: 0.9 }}>scoremyprompt.app/harness</div>
       </div>
     ),
     { ...imageSize },

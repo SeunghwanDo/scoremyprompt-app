@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import HomeClient from './HomeClient';
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://scoremyprompt.com';
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://scoremyprompt.app';
 
 export const metadata: Metadata = {
   title: 'ScoreMyPrompt — Grade Your AI Prompt in 30 Seconds',

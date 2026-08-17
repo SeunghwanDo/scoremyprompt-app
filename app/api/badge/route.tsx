@@ -212,7 +212,7 @@ export async function GET(request: Request) {
               zIndex: 1,
             }}
           >
-            scoremyprompt.com
+            scoremyprompt.app
           </span>
         </div>
       ),

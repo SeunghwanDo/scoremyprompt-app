@@ -73,6 +73,9 @@ export default function Header() {
 
   return (
     <header
+      // AQ pages (aq.ai.kr, app/aq/*) ship their own nav and hide this one via
+      // app/aq/layout.tsx — see the data attribute selector there.
+      data-global-header
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-200 ${
         scrolled || isOpen
           ? 'bg-dark/80 backdrop-blur-xl border-b border-white/5'

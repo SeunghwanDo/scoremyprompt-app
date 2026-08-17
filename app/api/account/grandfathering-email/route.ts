@@ -27,7 +27,7 @@ You don't need to do anything. If you want to cancel or have questions, hit repl
 Thanks for being here from the start.
 
 — The ScoreMyPrompt team
-https://scoremyprompt.com
+https://scoremyprompt.app
 
 You're receiving this because your account (${email}) is on a Legacy Pro subscription.`;
 }

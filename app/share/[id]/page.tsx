@@ -46,7 +46,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   const s = sp.s || '0';
   const t = sp.t || '0';
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://scoremyprompt.com';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://scoremyprompt.app';
   const ogImageUrl = new URL(`${baseUrl}/api/og`);
 
   ogImageUrl.searchParams.append('score', score);

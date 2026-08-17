@@ -42,16 +42,56 @@ function isAqHost(host: string | null): boolean {
   return AQ_HOSTS.has(hostname);
 }
 
+// Main-app origin that AQ host falls back to for non-AQ paths (guides, pricing, …).
+const MAIN_ORIGIN = process.env.NEXT_PUBLIC_BASE_URL || 'https://scoremyprompt.app';
+
+// Paths that exist under app/aq/* — the only things aq.ai.kr serves natively.
+// Anything else the global Header links to (/guides, /pricing, /templates, …)
+// used to be rewritten to /aq/guides etc. and 404'd. Now it redirects to the
+// main app instead. Keep in sync with app/aq/ route segments.
+const AQ_NATIVE_PATHS = ['/test', '/result', '/share', '/certificate', '/cert'];
+
+// Paths served as-is on the AQ host (static, api, PWA bits).
+const AQ_PASSTHROUGH_PREFIXES = ['/api/', '/_next', '/.well-known'];
+const AQ_PASSTHROUGH_EXACT = new Set(['/manifest.json', '/manifest.webmanifest', '/sw.js', '/offline']);
+// AQ has its own robots/sitemap under app/aq/ (the app-level ones are ScoreMyPrompt's).
+const AQ_OWN_WELL_KNOWN = new Set(['/robots.txt', '/sitemap.xml']);
+
+function isAqNativePath(pathname: string): boolean {
+  return AQ_NATIVE_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const host = request.headers.get('host');
 
-  // ── AQ host rewrite: aq.ai.kr → /aq/... ──
-  if (isAqHost(host) && !pathname.startsWith('/api/') && !pathname.startsWith('/aq')) {
-    const aqPath = pathname === '/' ? '/aq' : `/aq${pathname}`;
-    const url = new URL(aqPath, request.url);
-    url.search = request.nextUrl.search;
-    return NextResponse.rewrite(url);
+  // ── AQ host routing: aq.ai.kr ──
+  //  /            → rewrite /aq
+  //  /test, /cert/… (native AQ paths) → rewrite /aq/…
+  //  /aq/*        → 308 to clean URL (avoid duplicate URLs across hosts)
+  //  robots/sitemap/api/_next → pass through
+  //  everything else (/guides, /pricing, …) → 307 to main app
+  if (isAqHost(host)) {
+    if (pathname === '/aq' || pathname.startsWith('/aq/')) {
+      const stripped = pathname === '/aq' ? '/' : pathname.slice('/aq'.length);
+      const url = new URL(stripped, request.url);
+      url.search = request.nextUrl.search;
+      return NextResponse.redirect(url, 308);
+    }
+    if (pathname === '/' || isAqNativePath(pathname) || AQ_OWN_WELL_KNOWN.has(pathname)) {
+      const aqPath = pathname === '/' ? '/aq' : `/aq${pathname}`;
+      const url = new URL(aqPath, request.url);
+      url.search = request.nextUrl.search;
+      return NextResponse.rewrite(url);
+    }
+    const passthrough =
+      AQ_PASSTHROUGH_EXACT.has(pathname) ||
+      AQ_PASSTHROUGH_PREFIXES.some((p) => pathname.startsWith(p));
+    if (!passthrough) {
+      const url = new URL(pathname, MAIN_ORIGIN);
+      url.search = request.nextUrl.search;
+      return NextResponse.redirect(url, 307);
+    }
   }
 
   // ── Path-based i18n: extract locale prefix and rewrite ──

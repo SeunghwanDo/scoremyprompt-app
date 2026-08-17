@@ -2,7 +2,7 @@ import { GUIDES_CONTENT } from './content';
 import type { Metadata } from 'next';
 import Footer from '@/app/components/Footer';
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://scoremyprompt.com';
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://scoremyprompt.app';
 
 export const metadata: Metadata = {
   title: 'AI Prompt Engineering Guides | ScoreMyPrompt',
