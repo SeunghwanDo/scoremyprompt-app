@@ -1,14 +1,15 @@
-// aq.ai.kr/sitemap.xml — served via middleware rewrite (/sitemap.xml → /aq/sitemap.xml).
+﻿// aq.ai.kr/sitemap.xml — served via middleware rewrite (/sitemap.xml → /aq/sitemap.xml).
 // Only public, indexable AQ pages. /result, /share, /certificate are session-
 // or query-bound and excluded (see /aq/robots.txt).
 export const dynamic = 'force-static';
 
 const BASE = 'https://aq.ai.kr';
-const LAST_MOD = '2026-08-17';
+const LAST_MOD = '2026-08-22';
 
 const URLS: { path: string; priority: string; changefreq: string }[] = [
   { path: '/', priority: '1.0', changefreq: 'weekly' },
   { path: '/test', priority: '0.9', changefreq: 'monthly' },
+  { path: '/biz', priority: '0.9', changefreq: 'monthly' },
 ];
 
 export function GET(): Response {
