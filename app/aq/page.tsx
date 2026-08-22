@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -52,6 +52,7 @@ export default function AQLandingPage() {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            <a href="https://aq.ai.kr/biz" className="text-sm font-semibold text-indigo-300 hover:text-white transition-colors">기업용</a>
             <a href="/" className="text-sm text-gray-400 hover:text-white transition-colors">
               ScoreMyPrompt
             </a>

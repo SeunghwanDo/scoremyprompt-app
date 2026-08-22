@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -259,6 +259,13 @@ export default function AQResultPage() {
             </p>
           </div>
         )}
+
+        {/* ═══ Team CTA ═══ */}
+        <div className="mt-8 rounded-2xl border border-indigo-500/30 bg-indigo-500/10 p-6 text-center">
+          <p className="text-lg font-bold text-white mb-1">내 점수는 확인했습니다. 우리 팀 평균은 몇 점일까요?</p>
+          <p className="text-sm text-gray-400 mb-4">채용·교육·평가에 쓰는 팀 단위 진단 — 1인 3만원부터, 팀 리포트와 개인 점수지 포함.</p>
+          <a href="https://aq.ai.kr/biz" className="inline-block rounded-lg bg-indigo-500 px-6 py-3 font-bold text-white hover:bg-indigo-600 transition-colors">팀 진단 알아보기</a>
+        </div>
 
         {/* ═══ Action Buttons ═══ */}
         <div className="flex flex-col sm:flex-row gap-3">
