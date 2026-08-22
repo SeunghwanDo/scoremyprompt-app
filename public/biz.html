@@ -42,6 +42,10 @@
 ]}
 </script>
 
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Course","name":"AQ 그로스 프로그램 — 4주 팀 AI 역량 교육","description":"진단으로 반을 편성하고(입문 베이스캠프, 중급 부스터, 상급 AI 리드) 4주 실무 과제 교육 후 변형 문항 재진단으로 상승폭을 델타 리포트로 증명하는 팀 교육 프로그램.","provider":{"@type":"Organization","name":"위시웍스","email":"wishory@gmail.com"},"hasCourseInstance":{"@type":"CourseInstance","courseMode":"online","courseSchedule":{"@type":"Schedule","repeatFrequency":"P1W","repeatCount":4}}}
+</script>
+
 <style>
 :root{
   --ink:#16182a; --mut:#5b5f7b; --indigo:#4f46e5; --indigo-b:#6366f1;
@@ -205,6 +209,15 @@ nav{position:sticky;top:0;z-index:20;background:rgba(247,247,251,.9);backdrop-fi
 .delta .v2{font-family:"JetBrains Mono",monospace;font-weight:800;font-size:30px;color:#fff}
 .delta .up{font-family:"JetBrains Mono",monospace;font-weight:800;font-size:30px;color:#8b8ef7}
 .delta .cap{font-size:12.5px;color:#8f93c6}
+
+/* 커리큘럼 */
+.wk{width:100%;border-collapse:collapse;margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:13.5px}
+.wk th,.wk td{padding:12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.wk thead th{background:#f0f1f8;font-size:12.5px}
+.wk tr:last-child td{border-bottom:0}
+.wk td:first-child{font-family:"JetBrains Mono",monospace;font-weight:800;color:var(--indigo);white-space:nowrap}
+.wk-cap{margin-top:14px;font-size:13.5px;color:var(--mut)}
+.wk-cap b{color:var(--ink)}
 
 /* 도입 일정 */
 .days{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:26px}
@@ -492,6 +505,29 @@ footer a{color:var(--mut);text-decoration:underline}
     <span class="cap">팀 평균 · C → B 진입, B등급 이상 4명 → 9명</span>
   </div>
   <p class="loop-ev">교육이 하위 그룹에서 가장 크게 통한다는 건 연구로 확인된 사실입니다 — 생성 AI 도입 효과를 측정한 대규모 연구(NBER, 상담원 5,172명)에서 생산성은 평균 +15%, <b>숙련도가 낮은 그룹은 +34%</b>로 상승 폭이 가장 컸습니다. 하위 그룹을 찾아 교육하는 것이 팀 생산성을 올리는 최단 경로이고, 그 하위 그룹을 찾는 도구가 진단입니다.</p>
+</section>
+
+<!-- 커리큘럼 -->
+<section class="sec reveal">
+  <div class="eyebrow">Curriculum</div>
+  <h2>초보부터 실무자까지 — 4주, 각자의 레벨로</h2>
+  <p class="lead">진단 점수가 반을 정합니다. 입문자는 기본기부터, 중급자는 자동화 심화로, 상급자는 팀의 AI 리드로 — 몇 점이든 시작할 수 있고, 전원이 같은 6주 루프 안에서 움직입니다.</p>
+  <div class="loop">
+    <div class="step"><div class="no">BASECAMP · D~C등급</div><h3>베이스캠프</h3><p>AI 기본기와 프롬프트 구조부터 시작합니다. 목표는 B등급(110점) 진입 — 상승폭이 가장 큰 구간입니다.</p></div>
+    <div class="step"><div class="no">BOOSTER · B등급</div><h3>부스터</h3><p>도구 조합과 업무 자동화 심화 과정입니다. 목표는 A등급(140점) — 팀의 생산성 엔진을 만듭니다.</p></div>
+    <div class="step"><div class="no">AI LEAD · A~S등급</div><h3>AI 리드</h3><p>수업 대신 역할을 맡습니다. 동료 미션 리뷰와 팀 기준 수립을 주도하며 조직의 AI 리더로 공인됩니다.</p></div>
+  </div>
+  <table class="wk">
+    <thead><tr><th>주차</th><th>주제</th><th>실무 미션 — 각자의 실제 업무로</th></tr></thead>
+    <tbody>
+      <tr><td>W1</td><td>AI가 되는 일과 안 되는 일, 프롬프트 4요소</td><td>내 업무 문서 1개를 AI로 재작성해 전후 비교</td></tr>
+      <tr><td>W2</td><td>도구 선택과 반복 업무 워크플로화</td><td>반복 업무 1개를 AI로 전환하고 절감 시간 기록</td></tr>
+      <tr><td>W3</td><td>검증 루틴, 데이터 보안, 섀도 AI 대응</td><td>팀 AI 사용 기준 1페이지에 조항 기여</td></tr>
+      <tr><td>W4</td><td>자동화 입문과 프롬프트 자산화</td><td>검증된 프롬프트를 팀 프롬프트북에 등록</td></tr>
+      <tr><td>W5</td><td>재진단(변형 문항) + 델타 리포트 브리핑</td><td>팀 평균 변화와 절감 시간이 숫자로 남습니다</td></tr>
+    </tbody>
+  </table>
+  <p class="wk-cap">교육이 끝나면 소감문이 아니라 <b>델타 리포트, 팀 AI 사용 기준, 팀 프롬프트북</b>이 남습니다. 미션은 채점하지 않습니다 — 재진단이 결과를 말합니다.</p>
 </section>
 
 <!-- 도입 일정 -->
