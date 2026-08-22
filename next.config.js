@@ -1,4 +1,4 @@
-const { withSentryConfig } = require('@sentry/nextjs');
+﻿const { withSentryConfig } = require('@sentry/nextjs');
 
 /** @type {import('next').NextConfig} */
 const securityHeaders = [
@@ -19,9 +19,9 @@ if (process.env.NODE_ENV === 'production') {
     value: [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://us.i.posthog.com https://js.stripe.com",
-      "style-src 'self' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
       "img-src 'self' data: blob: https:",
-      "font-src 'self'",
+      "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com",
       "connect-src 'self' https://*.supabase.co https://us.i.posthog.com https://api.anthropic.com https://*.sentry.io https://api.stripe.com",
       "frame-src 'self' https://accounts.google.com https://js.stripe.com https://checkout.stripe.com",
       "base-uri 'self'",

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>AQ Score Report — 공식 점수지</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16182a; --mut:#5b5f7b; --indigo:#4f46e5; --indigo-b:#6366f1;
+  --soft:#eef0fe; --line:#dfe1ee; --paper:#fff;
+}
+*{margin:0;padding:0;box-sizing:border-box;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+body{
+  font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;
+  background:#e9eaf2;color:var(--ink);line-height:1.5;word-break:keep-all;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:"JetBrains Mono",monospace;font-variant-numeric:tabular-nums}
+
+/* 화면 툴바 */
+.toolbar{max-width:210mm;margin:18px auto 0;display:flex;gap:8px;align-items:center;padding:0 4px}
+.toolbar button{font-family:inherit;font-weight:800;font-size:14px;padding:10px 18px;border-radius:9px;border:1px solid transparent;cursor:pointer}
+.tb-p{background:var(--indigo);color:#fff}
+.tb-s{background:#fff;color:var(--ink);border-color:#cfd2e6}
+.toolbar .hint{font-size:12px;color:#6a6e8c;margin-left:auto}
+
+/* A4 시트 */
+.sheet{
+  position:relative;width:210mm;min-height:297mm;margin:12px auto 40px;
+  background:var(--paper);box-shadow:0 18px 60px rgba(22,24,42,.18);
+  padding:13mm 14mm 10mm;overflow:hidden;
+}
+/* 계측지 그리드 + 워터마크 */
+.sheet::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(rgba(79,70,229,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(79,70,229,.035) 1px,transparent 1px);
+  background-size:7mm 7mm;
+}
+.wm{position:absolute;right:-10mm;bottom:24mm;font-family:"JetBrains Mono",monospace;font-weight:800;font-size:120mm;line-height:1;color:transparent;-webkit-text-stroke:1px rgba(79,70,229,.06);pointer-events:none;user-select:none}
+.sheet>*{position:relative}
+
+/* 헤더 */
+.hd{display:flex;align-items:flex-start;gap:6mm;border-bottom:2px solid var(--ink);padding-bottom:4mm}
+.hd .lg{font-family:"JetBrains Mono",monospace;font-weight:800;font-size:24px;letter-spacing:-.02em}
+.hd .lg b{color:var(--indigo)}
+.hd .ti{font-weight:800;font-size:15px;margin-top:1px}
+.hd .ti small{display:block;font-family:"JetBrains Mono",monospace;font-weight:700;font-size:9px;letter-spacing:.18em;color:var(--indigo);text-transform:uppercase}
+.hd .doc{margin-left:auto;text-align:right;font-family:"JetBrains Mono",monospace;font-size:9.5px;color:var(--mut);line-height:1.7}
+.hd .doc b{color:var(--ink)}
+
+/* 대상자 + 검증 */
+.who{display:flex;gap:6mm;align-items:stretch;margin-top:5mm}
+.who .info{flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:3mm}
+.kv{border:1px solid var(--line);border-left:3px solid var(--indigo);padding:2.6mm 3.4mm;background:#fff}
+.kv .k{font-family:"JetBrains Mono",monospace;font-size:8px;font-weight:700;letter-spacing:.14em;color:var(--mut);text-transform:uppercase}
+.kv .v{font-weight:800;font-size:13.5px;margin-top:.8mm}
+.verify{width:34mm;border:1px solid var(--line);padding:2.4mm;text-align:center;background:#fff}
+.verify img{width:22mm;height:22mm;display:block;margin:0 auto}
+.verify .c{font-family:"JetBrains Mono",monospace;font-size:8.5px;font-weight:700;margin-top:1mm}
+.verify .u{font-family:"JetBrains Mono",monospace;font-size:7px;color:var(--mut)}
+
+/* 종합 점수 + 레이더 */
+.hero{display:flex;gap:8mm;margin-top:6mm;align-items:center}
+.score-blk{flex:1}
+.score-blk .lab{font-family:"JetBrains Mono",monospace;font-size:9px;font-weight:700;letter-spacing:.16em;color:var(--indigo);text-transform:uppercase}
+.big{display:flex;align-items:baseline;gap:3mm;margin-top:1mm}
+.big .n{font-family:"JetBrains Mono",monospace;font-weight:800;font-size:52px;letter-spacing:-.04em;line-height:1}
+.big .of{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:14px;color:var(--mut)}
+.badges{display:flex;gap:2.4mm;margin-top:3mm;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:1.8mm;border-radius:99px;padding:1.6mm 3.6mm;font-weight:800;font-size:12px}
+.badge.g{background:var(--indigo);color:#fff}
+.badge.g .mono{font-size:14px}
+.badge.p{background:var(--soft);color:#3b3f8f;border:1px solid #d6d9fb}
+.badge.d{background:#fff;color:var(--indigo);border:1px dashed var(--indigo)}
+.radar-wrap{width:62mm;flex:none}
+svg .ring{fill:none;stroke:#e7e8f4;stroke-width:1}
+svg .axis{stroke:#d5d7ea;stroke-width:1}
+svg .poly{fill:rgba(99,102,241,.16);stroke:var(--indigo);stroke-width:2;stroke-linejoin:round}
+svg .dot{fill:var(--indigo)}
+svg .alab{font-family:"JetBrains Mono",monospace;font-size:10px;font-weight:800;fill:var(--ink)}
+svg .aval{font-family:"JetBrains Mono",monospace;font-size:9px;font-weight:700;fill:var(--indigo)}
+
+/* 스케일 레일 */
+.rail{margin-top:6mm}
+.rail .rl{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:8px;font-weight:700;color:var(--mut);margin-bottom:1mm}
+.track{position:relative;height:7mm;display:flex;border:1px solid var(--ink);overflow:visible}
+.zone{position:relative;height:100%}
+.zone span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:"JetBrains Mono",monospace;font-size:8.5px;font-weight:800;color:#3b3f8f}
+.z-d{width:35%;background:#f4f5fb}.z-c{width:20%;background:#e9ebfa}.z-b{width:15%;background:#dcdffa}.z-a{width:15%;background:#c9cdf8}.z-s{width:15%;background:#b5baf6}
+.marker{position:absolute;top:-3.6mm;transform:translateX(-50%);text-align:center}
+.marker .mv{font-family:"JetBrains Mono",monospace;font-weight:800;font-size:10px;background:var(--ink);color:#fff;padding:.4mm 1.8mm;border-radius:2px;white-space:nowrap}
+.marker .tri{width:0;height:0;border:1.6mm solid transparent;border-top-color:var(--ink);margin:0 auto}
+.ticks{display:flex;justify-content:space-between;font-family:"JetBrains Mono",monospace;font-size:8px;color:var(--mut);margin-top:1mm}
+
+/* 영역 테이블 */
+.sec-t{font-family:"JetBrains Mono",monospace;font-size:9px;font-weight:700;letter-spacing:.16em;color:var(--indigo);text-transform:uppercase;margin:6.4mm 0 2.4mm;display:flex;align-items:center;gap:2.4mm}
+.sec-t::after{content:"";flex:1;height:1px;background:var(--line)}
+table.areas{width:100%;border-collapse:collapse;font-size:11px}
+table.areas th{font-family:"JetBrains Mono",monospace;font-size:8px;font-weight:700;letter-spacing:.1em;color:var(--mut);text-transform:uppercase;text-align:left;padding:1.4mm 2mm;border-bottom:1.5px solid var(--ink)}
+table.areas td{padding:2.2mm 2mm;border-bottom:1px solid var(--line);vertical-align:middle}
+table.areas .ak{font-family:"JetBrains Mono",monospace;font-weight:800;color:var(--indigo);width:6mm}
+table.areas .an{font-weight:800;font-size:11.5px}
+table.areas .an small{display:block;font-weight:500;font-size:9px;color:var(--mut)}
+table.areas .num{font-family:"JetBrains Mono",monospace;font-weight:800;font-size:13px;text-align:right;width:16mm}
+table.areas .wt,table.areas .ct{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:10px;text-align:right;color:var(--mut);width:14mm}
+.abar{position:relative;height:3.4mm;background:#eef0f8;width:100%;min-width:34mm}
+.abar i{position:absolute;left:0;top:0;bottom:0;background:var(--indigo)}
+.abar em{position:absolute;top:-1mm;bottom:-1mm;width:1px;background:var(--ink);opacity:.55}
+.avg-note{font-size:8.5px;color:var(--mut);margin-top:1.2mm}
+.avg-note i{display:inline-block;width:1px;height:2.6mm;background:var(--ink);opacity:.55;vertical-align:middle;margin-right:1mm}
+
+/* 코멘트 */
+.cmt{display:grid;grid-template-columns:1fr 1fr;gap:3.6mm;margin-top:2mm}
+.cbox{border:1px solid var(--line);padding:3.4mm 4mm;background:#fff}
+.cbox .ch{font-weight:800;font-size:11.5px;display:flex;gap:1.6mm;align-items:center;margin-bottom:1.2mm}
+.cbox .ch .tagc{font-family:"JetBrains Mono",monospace;font-size:8px;font-weight:800;letter-spacing:.1em;padding:.6mm 2mm;border-radius:2px}
+.tag-s{background:var(--soft);color:#3b3f8f}
+.tag-w{background:var(--ink);color:#fff}
+.cbox p{font-size:10.5px;color:#3f4260}
+
+/* 다음 단계 */
+.next{margin-top:4mm;background:#14152b;color:#c9cbe8;padding:4mm 5mm;display:flex;gap:5mm;align-items:center;border-radius:2px}
+.next .gap{flex:none;text-align:center}
+.next .gap .g1{font-family:"JetBrains Mono",monospace;font-weight:800;font-size:20px;color:#fff}
+.next .gap .g2{font-family:"JetBrains Mono",monospace;font-size:8px;color:#8f93c6;letter-spacing:.1em}
+.next p{font-size:10.5px}
+.next p b{color:#fff}
+
+/* 푸터 */
+.foot{margin-top:5mm;padding-top:3mm;border-top:2px solid var(--ink);display:flex;gap:5mm;align-items:flex-end}
+.foot .iss{font-size:9px;color:var(--mut);line-height:1.7}
+.foot .iss b{color:var(--ink);font-size:10px}
+.stamp{margin-left:auto;flex:none;width:24mm;height:24mm;border:2.2px solid var(--indigo);border-radius:50%;display:grid;place-items:center;text-align:center;color:var(--indigo);transform:rotate(-8deg);opacity:.9}
+.stamp .s1{font-family:"JetBrains Mono",monospace;font-weight:800;font-size:9px;letter-spacing:.08em}
+.stamp .s2{font-family:"JetBrains Mono",monospace;font-size:6.5px;letter-spacing:.06em;margin-top:.6mm}
+.stamp .s3{width:14mm;height:1px;background:var(--indigo);margin:1mm auto}
+.micro{margin-top:2.6mm;white-space:nowrap;overflow:hidden;font-family:"JetBrains Mono",monospace;font-size:5.5px;letter-spacing:.28em;color:rgba(79,70,229,.4);user-select:none}
+
+@media print{
+  body{background:#fff}
+  .toolbar{display:none}
+  .sheet{box-shadow:none;margin:0;width:auto;min-height:auto}
+}
+@page{size:A4;margin:0}
+@media(max-width:840px){
+  .sheet{width:100%;min-height:auto;padding:6mm}
+  .hero{flex-direction:column;align-items:flex-start}
+  .who{flex-direction:column}
+  .who .info{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="tb-p" onclick="window.print()">인쇄 / PDF 저장</button>
+  <button class="tb-s" onclick="location.search='?nm=김서연&org=한빛정밀&p=96&t=118&e=142&c=131&date=2026-08-22&code=Q4RM-72KX&pct=41&prev=104'">다른 샘플 보기</button>
+  <span class="hint">실데이터는 URL 파라미터로 주입 — ?nm=&amp;org=&amp;p=&amp;t=&amp;e=&amp;c=&amp;code=&amp;pct=&amp;prev=</span>
+</div>
+
+<div class="sheet" id="sheet">
+  <div class="wm">AQ</div>
+
+  <div class="hd">
+    <div class="lg"><b>AQ</b></div>
+    <div class="ti">공식 점수지<small>AI Quotient · Score Report</small></div>
+    <div class="doc">
+      DOC <b id="d-doc">AQ-2026-0000</b><br>
+      발급일 <b id="d-date">2026-08-22</b>
+    </div>
+  </div>
+
+  <div class="who">
+    <div class="info">
+      <div class="kv"><div class="k">Name</div><div class="v" id="d-nm">홍길동</div></div>
+      <div class="kv"><div class="k">Organization</div><div class="v" id="d-org">—</div></div>
+      <div class="kv"><div class="k">Assessment</div><div class="v">4영역 실측 · 온라인</div></div>
+    </div>
+    <div class="verify">
+      <img id="d-qr" alt="검증 QR" onerror="this.style.display='none'">
+      <div class="c" id="d-code">XXXX-XXXX</div>
+      <div class="u">aq.ai.kr/cert</div>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="score-blk">
+      <div class="lab">Total AQ Score</div>
+      <div class="big"><span class="n" id="d-total">125</span><span class="of">/ 200</span></div>
+      <div class="badges">
+        <span class="badge g"><span class="mono" id="d-g">B</span><span id="d-gnm">AI 실무자</span></span>
+        <span class="badge p" id="d-pct-b">상위 <b class="mono" id="d-pct">34</b>%</span>
+        <span class="badge d" id="d-delta-b">재진단 <b class="mono" id="d-delta">+0</b></span>
+      </div>
+    </div>
+    <div class="radar-wrap">
+      <svg viewBox="0 0 200 190" role="img" aria-label="4영역 레이더 차트">
+        <g id="r-rings"></g>
+        <g id="r-axes"></g>
+        <polygon id="r-poly" class="poly" points=""></polygon>
+        <g id="r-dots"></g>
+        <text class="alab" x="100" y="12" text-anchor="middle">P</text><text class="aval" x="100" y="22" text-anchor="middle" id="rv-p"></text>
+        <text class="alab" x="188" y="96" text-anchor="middle">T</text><text class="aval" x="188" y="106" text-anchor="middle" id="rv-t"></text>
+        <text class="alab" x="100" y="180" text-anchor="middle">E</text><text class="aval" x="100" y="189" text-anchor="middle" id="rv-e"></text>
+        <text class="alab" x="12" y="96" text-anchor="middle">C</text><text class="aval" x="12" y="106" text-anchor="middle" id="rv-c"></text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="rail">
+    <div class="rl"><span>GRADE SCALE 0–200</span><span>S 170+ · A 140+ · B 110+ · C 70+</span></div>
+    <div class="track">
+      <div class="zone z-d"><span>D</span></div>
+      <div class="zone z-c"><span>C</span></div>
+      <div class="zone z-b"><span>B</span></div>
+      <div class="zone z-a"><span>A</span></div>
+      <div class="zone z-s"><span>S</span></div>
+      <div class="marker" id="d-marker" style="left:62.5%"><span class="mv" id="d-mv">125</span><div class="tri"></div></div>
+    </div>
+    <div class="ticks"><span>0</span><span style="margin-left:22%">70</span><span>110</span><span>140</span><span>170</span><span>200</span></div>
+  </div>
+
+  <div class="sec-t">영역별 점수 · Area Breakdown</div>
+  <table class="areas">
+    <thead><tr><th></th><th>영역</th><th style="text-align:right">점수</th><th></th><th style="text-align:right">가중치</th><th style="text-align:right">기여</th></tr></thead>
+    <tbody id="area-body"></tbody>
+  </table>
+  <div class="avg-note"><i></i>막대 위 세로선 = 전체 응시자 평균</div>
+
+  <div class="sec-t">진단 코멘트 · Findings</div>
+  <div class="cmt">
+    <div class="cbox">
+      <div class="ch"><span class="tagc tag-s">STRENGTH</span><span id="c-s-t">강점 영역</span></div>
+      <p id="c-s-p"></p>
+    </div>
+    <div class="cbox">
+      <div class="ch"><span class="tagc tag-w">FOCUS</span><span id="c-w-t">보완 영역</span></div>
+      <p id="c-w-p"></p>
+    </div>
+  </div>
+
+  <div class="next">
+    <div class="gap"><div class="g1" id="n-gap">+15</div><div class="g2" id="n-lab">TO GRADE A</div></div>
+    <p id="n-p"></p>
+  </div>
+
+  <div class="foot">
+    <div class="iss">
+      <b>발급 · AQ by ScoreMyPrompt</b><br>
+      운영 위시웍스 · 사업자등록번호 755-31-01888 · wishory@gmail.com<br>
+      본 점수지는 자기보고 설문이 아닌 실측 진단 결과이며, 검증 코드로 진위를 확인할 수 있습니다.
+    </div>
+    <div class="stamp"><div><div class="s1">AQ</div><div class="s3"></div><div class="s2">VERIFIED<br>SCOREMYPROMPT</div></div></div>
+  </div>
+  <div class="micro" id="micro"></div>
+</div>
+
+<script>
+/* ===== 설정 (배포 시 여기만 수정) ===== */
+const WEIGHTS = { p:.40, t:.25, e:.20, c:.15 };
+const AVG = { p:112, t:105, e:121, c:108 };      // 전체 응시자 평균 (막대 위 기준선)
+const GRADES = [
+  { g:"S", nm:"AI 마스터",  min:170 },
+  { g:"A", nm:"AI 전문가",  min:140 },
+  { g:"B", nm:"AI 실무자",  min:110 },
+  { g:"C", nm:"AI 입문자",  min:70  },
+  { g:"D", nm:"AI 탐험가",  min:0   }
+];
+const AREA_META = {
+  p:{ nm:"프롬프트 엔지니어링", ds:"AI에게 정확한 지시를 전달하는 능력" },
+  t:{ nm:"AI 도구 활용",       ds:"상황에 맞는 도구를 선택·조합하는 능력" },
+  e:{ nm:"AI 윤리 & 편향",     ds:"윤리적 사용과 편향을 인식하는 능력" },
+  c:{ nm:"AI 개념 이해",       ds:"원리·한계·가능성을 이해하는 능력" }
+};
+const COMMENTS = {
+  p:{ s:"지시를 구조화해 출력 품질을 끌어올리는 능력이 상위권입니다. 복잡한 과제를 단계로 쪼개 정확히 전달합니다.",
+      w:"지시가 모호해 재작업이 잦은 패턴입니다. 역할·형식·조건을 명시하는 프롬프트 구조 훈련이 가장 빠른 개선 지점입니다." },
+  t:{ s:"과제 성격에 맞는 도구를 고르고 조합하는 감각이 뛰어납니다. 단일 도구 의존 없이 워크플로를 설계합니다.",
+      w:"익숙한 도구 하나에 의존하는 경향이 있습니다. 과제 유형별 도구 매핑과 조합 실습이 필요합니다." },
+  e:{ s:"생성 결과의 편향·저작권·보안 리스크를 스스로 걸러냅니다. 조직의 안전한 사용 기준을 제시할 수 있는 수준입니다.",
+      w:"결과물 검증 없이 사용하는 패턴이 관찰됩니다. 편향·환각·보안 체크리스트 기반의 검증 습관이 필요합니다." },
+  c:{ s:"모델의 원리와 한계를 이해하고 있어, 되지 않는 일에 시간을 쓰지 않습니다.",
+      w:"원리·한계 이해가 얕아 과신 또는 과소평가가 나타납니다. 개념 교육이 나머지 세 영역의 상승을 함께 끌어냅니다." }
+};
+/* ==================================== */
+
+const Q = new URLSearchParams(location.search);
+const num = (k, d) => { const v = parseInt(Q.get(k), 10); return isNaN(v) ? d : Math.max(0, Math.min(200, v)); };
+const S = { p:num("p",128), t:num("t",142), e:num("e",118), c:num("c",96) };
+const nm   = Q.get("nm")   || "홍길동";
+const org  = Q.get("org")  || "—";
+const date = Q.get("date") || new Date().toISOString().slice(0,10);
+const code = Q.get("code") || "SAMPLE-0000";
+const pct  = Q.get("pct");
+const prev = Q.get("prev");
+
+const total = Math.round(S.p*WEIGHTS.p + S.t*WEIGHTS.t + S.e*WEIGHTS.e + S.c*WEIGHTS.c);
+const grade = GRADES.find(g => total >= g.min);
+const gi = GRADES.indexOf(grade);
+const nextG = gi > 0 ? GRADES[gi-1] : null;
+
+const $ = s => document.querySelector(s);
+$("#d-nm").textContent = nm;
+$("#d-org").textContent = org;
+$("#d-date").textContent = date;
+$("#d-code").textContent = code;
+$("#d-doc").textContent = "AQ-" + date.replaceAll("-","").slice(2) + "-" + code.split("-")[0];
+$("#d-qr").src = "https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=0&color=16182a&data=" + encodeURIComponent("https://aq.ai.kr/cert/" + code);
+$("#d-total").textContent = total;
+$("#d-mv").textContent = total;
+$("#d-g").textContent = grade.g;
+$("#d-gnm").textContent = grade.nm;
+$("#d-marker").style.left = (total/200*100) + "%";
+
+if (pct) { $("#d-pct").textContent = pct; } else { $("#d-pct-b").style.display = "none"; }
+if (prev) {
+  const d = total - parseInt(prev,10);
+  $("#d-delta").textContent = (d >= 0 ? "+" : "") + d;
+  $("#d-delta-b").innerHTML = "재진단 · " + prev + " → " + total + " <b class='mono'>(" + (d>=0?"+":"") + d + ")</b>";
+} else { $("#d-delta-b").style.display = "none"; }
+
+/* 영역 테이블 */
+const keys = ["p","t","e","c"];
+$("#area-body").innerHTML = keys.map(k => {
+  const m = AREA_META[k], v = S[k], contrib = Math.round(v * WEIGHTS[k] * 10) / 10;
+  return `<tr>
+    <td class="ak mono">${k.toUpperCase()}</td>
+    <td class="an">${m.nm}<small>${m.ds}</small></td>
+    <td class="num">${v}</td>
+    <td><div class="abar"><i style="width:${v/200*100}%"></i><em style="left:${AVG[k]/200*100}%"></em></div></td>
+    <td class="wt">${Math.round(WEIGHTS[k]*100)}%</td>
+    <td class="ct">${contrib}</td>
+  </tr>`;
+}).join("");
+
+/* 강점/보완 = 최고/최저 영역 */
+const sorted = [...keys].sort((a,b) => S[b] - S[a]);
+const hi = sorted[0], lo = sorted[sorted.length-1];
+$("#c-s-t").textContent = AREA_META[hi].nm + " · " + S[hi] + "점";
+$("#c-s-p").textContent = COMMENTS[hi].s;
+$("#c-w-t").textContent = AREA_META[lo].nm + " · " + S[lo] + "점";
+$("#c-w-p").textContent = COMMENTS[lo].w;
+
+/* 다음 단계 */
+if (nextG) {
+  $("#n-gap").textContent = "+" + (nextG.min - total);
+  $("#n-lab").textContent = "TO GRADE " + nextG.g;
+  $("#n-p").innerHTML = `다음 등급 <b>${nextG.g} · ${nextG.nm}</b>까지 <b>${nextG.min - total}점</b> 남았습니다. 최약 영역인 <b>${AREA_META[lo].nm}</b>을 겨냥한 교육 후 재진단을 권장합니다 — 상승폭은 델타 리포트로 확인됩니다.`;
+} else {
+  $("#n-gap").textContent = "MAX";
+  $("#n-lab").textContent = "GRADE S";
+  $("#n-p").innerHTML = `최상위 등급입니다. 조직 내 <b>AI 리드</b> 역할과 팀 교육 설계 참여를 권장합니다.`;
+}
+
+/* 레이더 (P상·T우·E하·C좌) */
+const CX=100, CY=96, R=76;
+const ANG = { p:-90, t:0, e:90, c:180 };
+const pt = (k, r) => {
+  const a = ANG[k] * Math.PI / 180;
+  return [CX + Math.cos(a)*r, CY + Math.sin(a)*r];
+};
+let rings = "";
+[.25,.5,.75,1].forEach(f => {
+  const ps = keys.map(k => pt(k, R*f).join(",")).join(" ");
+  rings += `<polygon class="ring" points="${ps}"/>`;
+});
+$("#r-rings").innerHTML = rings;
+$("#r-axes").innerHTML = keys.map(k => {
+  const [x,y] = pt(k, R);
+  return `<line class="axis" x1="${CX}" y1="${CY}" x2="${x}" y2="${y}"/>`;
+}).join("");
+$("#r-poly").setAttribute("points", keys.map(k => pt(k, S[k]/200*R).join(",")).join(" "));
+$("#r-dots").innerHTML = keys.map(k => {
+  const [x,y] = pt(k, S[k]/200*R);
+  return `<circle class="dot" cx="${x}" cy="${y}" r="2.6"/>`;
+}).join("");
+keys.forEach(k => $("#rv-" + k).textContent = S[k]);
+
+/* 보안 마이크로텍스트 */
+$("#micro").textContent = ("AQ·SCOREMYPROMPT·VERIFIED·" + code + "·").repeat(14);
+
+document.title = "AQ 점수지 — " + nm + " · " + total + "점 " + grade.g + "등급";
+</script>
+</body>
+</html>

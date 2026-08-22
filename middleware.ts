@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+﻿import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Routes that require authentication
@@ -72,6 +72,22 @@ export function middleware(request: NextRequest) {
   //  robots/sitemap/api/_next → pass through
   //  everything else (/guides, /pricing, …) → 307 to main app
   if (isAqHost(host)) {
+    // Standalone static pages on the AQ host (public/*.html) served on clean URLs.
+    const AQ_STATIC_PAGES: Record<string, string> = {
+      '/biz': '/biz.html',
+      '/report': '/report.html',
+    };
+    const staticDest = AQ_STATIC_PAGES[pathname];
+    if (staticDest) {
+      const url = new URL(staticDest, request.url);
+      url.search = request.nextUrl.search;
+      return NextResponse.rewrite(url);
+    }
+    if (pathname === '/biz.html' || pathname === '/report.html') {
+      const url = new URL(pathname.replace('.html', ''), request.url);
+      url.search = request.nextUrl.search;
+      return NextResponse.redirect(url, 308);
+    }
     if (pathname === '/aq' || pathname.startsWith('/aq/')) {
       const stripped = pathname === '/aq' ? '/' : pathname.slice('/aq'.length);
       const url = new URL(stripped, request.url);
