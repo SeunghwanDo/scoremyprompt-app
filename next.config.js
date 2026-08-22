@@ -22,7 +22,7 @@ if (process.env.NODE_ENV === 'production') {
       "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
       "img-src 'self' data: blob: https:",
       "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com",
-      "connect-src 'self' https://*.supabase.co https://us.i.posthog.com https://api.anthropic.com https://*.sentry.io https://api.stripe.com",
+      "connect-src 'self' https://*.supabase.co https://us.i.posthog.com https://api.anthropic.com https://*.sentry.io https://api.stripe.com https://wf.biz360.kr",
       "frame-src 'self' https://accounts.google.com https://js.stripe.com https://checkout.stripe.com",
       "base-uri 'self'",
       "form-action 'self'",
