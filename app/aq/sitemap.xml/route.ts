@@ -10,6 +10,7 @@ const URLS: { path: string; priority: string; changefreq: string }[] = [
   { path: '/', priority: '1.0', changefreq: 'weekly' },
   { path: '/test', priority: '0.9', changefreq: 'monthly' },
   { path: '/biz', priority: '0.9', changefreq: 'monthly' },
+  { path: '/prompt', priority: '0.8', changefreq: 'monthly' },
 ];
 
 export function GET(): Response {

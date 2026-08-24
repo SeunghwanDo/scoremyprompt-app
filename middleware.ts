@@ -76,6 +76,7 @@ export function middleware(request: NextRequest) {
     const AQ_STATIC_PAGES: Record<string, string> = {
       '/biz': '/biz.html',
       '/report': '/report.html',
+      '/prompt': '/prompt-rx.html',
     };
     const staticDest = AQ_STATIC_PAGES[pathname];
     if (staticDest) {
